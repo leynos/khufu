@@ -49,7 +49,7 @@ deployed to Kubernetes with Helm. The field's established conventions are:
 - disposable local clusters (kind, k3d, minikube) standing in for a real
   cluster;
 - Kubernetes operators reconciling stateful services from custom resources,
-  rather than hand-written StatefulSets;
+  rather than handwritten StatefulSets;
 - Helm charts as the application packaging boundary, with environment-specific
   values files; and
 - GitOps reconciliation (Flux in the df12 estate) as the production delivery
@@ -127,7 +127,7 @@ and consumer checks; it needs a foreground mode and deterministic exit codes.
 | Party                                     | Relationship | Cares about                                                  | Will reject                                                                |
 | ----------------------------------------- | ------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | Consumer-repository maintainers           | Primary user | Fast, trustworthy local validation of their own application  | Prompts, sudo, global configuration changes, per-repo infrastructure forks |
-| Coding agents                             | Primary user | Machine protocol, idempotent submission, durable jobs        | Interactive flows, unbounded or unparseable output                         |
+| Coding agents                             | Primary user | Machine protocol, idempotent submission, durable jobs        | Interactive flows, unbounded or unparsable output                          |
 | Reviewers                                 | Secondary    | Honest coverage and evidence                                 | Reports that overstate what ran                                            |
 | CI                                        | Secondary    | Deterministic exits, foreground execution, regression matrix | Hidden network discovery of moving versions                                |
 | Estate owner (Nile Valley)                | Stakeholder  | One platform baseline, no drift, approved toolchain pins     | Consumers selecting their own operators or versions                        |
