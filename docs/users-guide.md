@@ -1,5 +1,16 @@
 # khufu Users' Guide
 
+## Khufu Status
+
+Khufu is designed but not yet implemented. No `khufu` command, `.khufu.toml`
+contract, or validation report is available yet, so this guide documents only
+the repository's build and quality gates. The planned interface is specified in
+the [Khufu design](khufu-design.md): the application contract in §6.2, the
+command surface in §9, the agent-native protocol and exit codes in §10, durable
+jobs in §11, and reports in §13. The [roadmap](roadmap.md) sequences delivery;
+this guide will document each command as it ships, starting with the Episodic
+golden path in phase 2.
+
 ## Quality Gates
 
 Before the first quality-gate run, initialize Git at the generated project root
