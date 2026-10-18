@@ -544,6 +544,15 @@ Kubernetes range fits the contract. See khufu-design.md §3.2 and §12.2.
   - Success: Wildside passes its health contract, session-key mount check,
     and a declared non-health operation, or the plan fails with an explicit
     empty-intersection error.
+- [ ] 4.1.3. Widen Wildside's chart Kubernetes range in the Wildside
+  repository when 4.1.2 reports an empty intersection.
+  - Requires 4.1.2.
+  - Justify the widened range with tests against the locked node image; skip
+    this task, recording the resolved version, when the intersection is
+    non-empty.
+  - See khufu-design.md §3.2 and §7.1.
+  - Success: Wildside's plan resolves a Kubernetes version shared with the
+    other consumers and the operator bundle.
 
 ### 4.2. Onboard Ghillie with its application corrections
 
@@ -578,7 +587,7 @@ collisions. See khufu-design.md §8.5 and §15.2.
   - Reject ambiguous or empty hosts; validate through a loopback forward
     with the correct Host header; report `not_requested` when disabled.
 - [ ] 4.3.2. Build the four-application coexistence E2E suite.
-  - Requires 4.1.2, 4.2.3, and 4.3.1.
+  - Requires 4.1.3, 4.2.3, and 4.3.1.
   - Success: all four consumers coexist without conflicting namespaces,
     release names, Secrets, image tags, or ingress routes, and two
     worktrees remain isolated.
@@ -607,9 +616,17 @@ every consumer before release. See khufu-design.md §4.3 and §15.
 - [ ] 5.1.1. Define `validation-estate.toml` in Nile Valley.
   - Requires 1.1.1 and phase 4.
   - Record the approved Khufu release and each consumer revision.
-- [ ] 5.1.2. Implement the resource-bounded rootless kind regression matrix
+- [ ] 5.1.2. Implement foreground execution for hosts without a usable
+  systemd user session.
+  - Requires 1.1.3 and 2.2.4.
+  - Record foreground execution in the job and report; losing the process
+    marks the job interrupted rather than claiming detached durability.
+  - See khufu-design.md §11.3.
+  - Success: a job on a host without user systemd completes in the
+    foreground, and its report states the weaker durability guarantee.
+- [ ] 5.1.3. Implement the resource-bounded rootless kind regression matrix
   in Nile Valley CI.
-  - Requires 5.1.1.
+  - Requires 5.1.1 and 5.1.2.
   - Success: a Khufu candidate is marked supported only when all four
     consumers pass their contract and smoke suites.
 
@@ -654,7 +671,8 @@ khufu-design.md §15.3.
 - [ ] 5.4.1. Run the release acceptance suite and record qualification
   evidence alongside the platform lock.
   - Requires steps 5.1-5.3.
-  - Success: every behaviour in khufu-design.md §15.3 passes, and the
+  - Success: every behaviour in khufu-design.md §15.3 passes, except TUI
+    terminal restoration, which 6.1.2 verifies when the TUI ships; the
     estate manifest and consumer pins update together.
 
 ## 6. Vertical slice 5: Interactive inspection without a second engine
@@ -706,21 +724,11 @@ letting them delay elimination of the four legacy implementations.
 
 ### 7.3. Evaluate execution and delivery extensions
 
-- [ ] 7.3.1. Decide whether a foreground-only CI execution mode is needed.
-  - Requires phase 5.
-  - See khufu-design.md §11.3.
-- [ ] 7.3.2. Decide whether an allowlisted webhook delivery adapter is
+- [ ] 7.3.1. Decide whether an allowlisted webhook delivery adapter is
   needed.
   - Requires phase 5.
   - See khufu-design.md §13.4.
-- [ ] 7.3.3. Decide whether an orphan adoption workflow is needed beyond
+- [ ] 7.3.2. Decide whether an orphan adoption workflow is needed beyond
   orphan reporting.
   - Requires 2.5.3.
   - See khufu-design.md §14.
-
-### 7.4. Evaluate widening Wildside's Kubernetes range
-
-- [ ] 7.4.1. Decide whether Wildside's chart range can widen based on test
-  evidence.
-  - Requires 4.1.2.
-  - See khufu-design.md §3.2.

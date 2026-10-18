@@ -49,12 +49,12 @@ validation evidence.
 
 ### 1.1. Implementation home
 
-The originating design placed Khufu inside `leynos/nile-valley`. This
-repository, `leynos/khufu`, is the implementation home instead: Khufu ships as
-its own Python package and release. Nile Valley keeps the estate manifest
+The originating design placed Khufu inside `leynos/nile-valley`. This design
+proposes `leynos/khufu` as the implementation home instead, so that Khufu ships
+as its own Python package and release. The proposal remains provisional until
+ADR-001 is accepted (see §18). Nile Valley keeps the estate manifest
 (`validation-estate.toml`), the regression matrix, and the shared typed fixture
-specifications that its GitOps path also renders. ADR-001 records this decision
-(see §18).
+specifications that its GitOps path also renders.
 
 ## 2. Constraints and non-goals
 
@@ -793,19 +793,24 @@ instead of spawning a second worker. The user service owns execution; a TTY or
 User services are not assumed to survive logout or reboot, and `doctor` reports
 the host's session guarantees. After a reboot the ledger remains durable while
 execution has stopped; recovery marks the job interrupted and reconciles it. A
-future foreground-only CI mode must advertise that losing its process
-interrupts execution and must not masquerade as detached execution.
+foreground CI mode serves hosts without a usable systemd user session. It
+records foreground execution in the job and report, advertises that losing its
+process interrupts execution, and never masquerades as detached execution.
 
 ### 11.4. Job state machine
 
 For screen readers: the following state diagram shows a job moving from queued
 to running and then to one of four terminal states, or through interrupted and
-reconciling back to running or to a failed or indeterminate terminal state.
+reconciling back to running or to a failed or indeterminate terminal state. A
+queued job can also be cancelled before it starts, or become interrupted when a
+crash leaves its worker start unconfirmed.
 
 ```mermaid
 stateDiagram-v2
     [*] --> queued
     queued --> running
+    queued --> cancelled
+    queued --> interrupted
     running --> succeeded
     running --> failed
     running --> cancelled
@@ -834,11 +839,15 @@ exactly-once claim.
 
 ### 11.5. Cancellation
 
-`jobs cancel` records the request durably, stops supervised subprocess groups
-with a bounded grace period, then reconciles resources Kubernetes has already
-accepted, stopping owned test Jobs where necessary. Cancellation is not
-rollback. Whether the environment is retained or deleted follows the job's
-cleanup policy (§14).
+Cancelling a queued job whose worker has not started moves it directly to
+`cancelled`. If the worker start is unconfirmed, recovery first reconciles the
+recorded unit name (§11.3) and stops any worker it finds.
+
+For a running job, `jobs cancel` records the request durably, stops supervised
+subprocess groups with a bounded grace period, then reconciles resources
+Kubernetes has already accepted, stopping owned test Jobs where necessary.
+Cancellation is not rollback. Whether the environment is retained or deleted
+follows the job's cleanup policy (§14).
 
 ### 11.6. Locking
 
@@ -1044,8 +1053,8 @@ that all four consumers have migrated.
   effect, or record boundaries either reconciles safely or reports an
   indeterminate operation.
 - Non-TTY calls, malformed inputs, and errors emit schema-valid bounded JSON
-  without terminal escapes or prompts. The TUI restores terminal state after
-  exceptions.
+  without terminal escapes or prompts. Once the TUI ships, it restores terminal
+  state after exceptions. The first consolidated release may precede the TUI.
 - A wrong ambient kube-context, similarly named cluster, stale environment
   marker, changed CA, or wrong Podman connection cannot redirect a mutation.
 - An invalid Valkey group-version-kind (GVK), mismatched topology, or
@@ -1130,8 +1139,9 @@ _Table 8: Principal risks._
 
 ## 18. Open questions and ADR candidates
 
-- **ADR-001: implementation home.** Khufu ships from `leynos/khufu`; Nile
-  Valley holds the estate manifest and regression matrix (§1.1).
+- **ADR-001: implementation home.** Proposed: Khufu ships from
+  `leynos/khufu`, and Nile Valley holds the estate manifest and regression
+  matrix (§1.1). Pending acceptance.
 - **ADR-002: fixed substrate.** kind on rootless Podman with no provider
   abstraction (§2).
 - **ADR-003: job supervision.** Transient systemd user services as execution
