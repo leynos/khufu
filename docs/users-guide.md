@@ -101,6 +101,19 @@ Discovery is read-only and never imports application Python modules or runs
 hooks. Unknown fields and unknown schema versions fail with JSON Pointer field
 locations and the valid alternatives.
 
+### Check execution and trust
+
+Checks normally run as Kubernetes Jobs using the application image or a
+separately pinned test image, with credentials supplied through Secret
+references. An application-owned host test entrypoint instead requires explicit
+trust authorization in the reviewed plan and runs through `cuprum` without a
+shell. Host entrypoints may perform migrations, fixtures, or assertions, but
+never provision or tear down infrastructure.
+
+Host execution is trusted code, not a sandbox, so the reviewed plan is where
+that trust is granted and the design (§6.3) defines the boundary. No template
+expression evaluates arbitrary Python.
+
 ## Workspace and profiles
 
 Two further inputs select how a contract runs:
@@ -161,6 +174,33 @@ Every submitting mutation supports `--wait`, a finite execution `--timeout`,
 observer only and never cancels an in-flight job. `jobs get` succeeds when it
 retrieves a job, even a failed one; `jobs get --wait` and `run create --wait`
 propagate the job's terminal outcome.
+
+### Validation suites
+
+A plan selects one or more suites. The design (§12) defines their coverage; the
+essentials are:
+
+- **Contract.** Parses the schemas, resolves required files, verifies lock and
+  chart dependency hashes, runs Helm lint and deterministic rendering, and
+  validates against the exact Kubernetes and CRD schemas, including namespace
+  scope, Secret bindings, probes, volumes, and requested capabilities. Contract
+  validation needs no running cluster.
+- **Smoke.** Creates or verifies the rootless kind environment, installs the
+  selected operators, proves service connectivity and authentication from
+  inside the cluster, runs declared migrations, deploys the built image, checks
+  liveness and readiness, and runs at least one non-health application
+  operation. A database `SELECT 1` is not evidence that schema and business
+  operations work.
+- **Integration.** Executes application-owned, deterministic acceptance
+  scenarios using local dependency fakes and synthetic credentials. Contacting
+  a live external service, such as an AI provider, requires an explicit profile
+  capability recorded as a distinct coverage mode; the default never spends API
+  credits or contacts production systems.
+
+A missing declared functional test blocks the corresponding validation level,
+so a suite cannot report success by skipping the behaviour it exists to prove.
+The GitOps and platform extension suites are deferred and appear in reports as
+coverage exclusions until roadmap tasks deliver them.
 
 ## Machine-readable output
 
@@ -238,7 +278,20 @@ become interrupted before it starts. After a crash, recovery reconciles the
 recorded worker identity and re-queries Kubernetes and Helm rather than
 assuming an operation failed because a client lost its response. An operation
 that cannot be safely replayed may end `indeterminate`. The design (§11)
-defines the state machine and cancellation behaviour.
+defines the state machine.
+
+Cancellation is explicit and is not rollback. For a queued job whose worker has
+not started, `jobs cancel` moves it directly to `cancelled`; if the worker
+start is unconfirmed, recovery reconciles the recorded unit name first and
+stops any worker it finds. For a running job, Khufu records the request
+durably, stops supervised subprocess groups with a bounded grace period, and
+reconciles work Kubernetes has already accepted, stopping owned test Jobs where
+necessary. Whether the environment is retained or deleted afterwards follows
+the job's cleanup policy (§14), not the cancellation itself.
+
+Cancelling a job is distinct from an observer timeout. `--wait-timeout` and an
+expired deadline end only the local wait; the durable worker continues unless a
+`jobs cancel` request stops it. The design (§11.5) defines the full sequence.
 
 ### Execution modes
 
@@ -271,15 +324,19 @@ fingerprint, so different toolchains cannot masquerade as equivalent validation.
 Reports distinguish `passed`, `failed`, `blocked`, `skipped`, and
 `not_requested`. A required check cannot skip its way to success. A capability
 that was not requested, such as ingress, appears as `not_requested` coverage
-rather than implying that it works. The design (§13) defines the evidence
-bundle contents.
+rather than implying that it works.
 
 An evidence bundle contains the summary, canonical report JSON, JUnit XML, the
 redacted plan, relevant rendered manifests, bounded Kubernetes events, Pod
 status and termination data, available container logs, migration and test Job
-results, and cleanup results. Failed Helm installs and test Jobs keep their
-diagnostics before cleanup, and a cleanup failure never overwrites the original
-validation failure.
+results, Helm and Flux observations, and cleanup results. Failed Helm installs
+and test Jobs keep their diagnostics before TTL cleanup, namespace deletion, or
+any configured rollback removes them.
+
+The primary validation failure and any cleanup failure are both preserved; a
+cleanup problem never overwrites the original error. A failed required
+leak-cleanup check prevents a disposable run from succeeding. The design
+(§13.1) defines the bundle contents.
 
 ## Secrets and safety
 
