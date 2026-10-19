@@ -17,8 +17,9 @@ below.
 
 ## Project guides
 
-- [User guide](users-guide.md) explains how to use the generated project and
-  its public build and test commands.
+- [User guide](users-guide.md) explains the planned Khufu workflow, contracts,
+  jobs, reports, and constraints, and documents the repository's public build
+  and test commands.
 - [Developer guide](developers-guide.md) explains the contributor workflow and
   points maintainers to script automation standards.
 - [Documentation style guide](documentation-style-guide.md) defines the
