@@ -10,8 +10,10 @@ dependencies, design citations, and success criteria.
 The sequence follows the extraction order in khufu-design.md §16: capture the
 demonstrated baseline, extract Episodic's execution path, integrate Corbusier's
 hosting model, migrate Wildside and Ghillie, then remove the legacy sources of
-drift. Architectural decision records (ADRs) live in `docs/` as `adr-NNN-*.md`;
-terminology follows [context](context.md).
+drift. Follow the [documentation style guide](documentation-style-guide.md) for
+four-digit filenames: ADRs use `docs/adrs/adr-nnnn-title-slug.md`, and Requests
+for Comments (RFCs) use `docs/rfcs/rfc-nnnn-title-slug.md`. Terminology follows
+[context](context.md).
 
 ## 1. Foundational contracts and demonstrated baseline
 
@@ -29,7 +31,7 @@ interface, and the worker ownership model that every later step assumes. See
 khufu-design.md §§1-2 and §18.
 
 - [ ] 1.1.1. Record the implementation-home decision as
-  `docs/adr-001-implementation-home.md`.
+  `docs/adrs/adr-0001-implementation-home.md`.
   - Decide that `leynos/khufu` hosts the implementation and that Nile Valley
     hosts `validation-estate.toml` and the regression matrix.
   - Record the divergence from the source design's Nile Valley home and the
@@ -38,7 +40,7 @@ khufu-design.md §§1-2 and §18.
   - Success: one accepted ADR names the code home, the estate-manifest home,
     and the release channel consumers pin.
 - [ ] 1.1.2. Record the fixed substrate decision as
-  `docs/adr-002-fixed-kind-rootless-substrate.md`.
+  `docs/adrs/adr-0002-fixed-kind-rootless-substrate.md`.
   - Requires 1.1.1.
   - State that Linux, rootless Podman, kind, kubectl, and Helm are the only
     supported stack, with no `--provider`, `--engine`, k3d, Docker, rootful
@@ -47,14 +49,15 @@ khufu-design.md §§1-2 and §18.
     extension points.
   - See khufu-design.md §2 and §17.
 - [ ] 1.1.3. Record the job supervision decision as
-  `docs/adr-003-systemd-user-service-supervision.md`.
+  `docs/adrs/adr-0003-systemd-user-service-supervision.md`.
   - Requires 1.1.1.
   - Decide that transient systemd user services own workers, that waiting
     CLIs are observers, and that a foreground-only mode is deferred.
   - Record session-survival limits that `doctor` must report.
   - See khufu-design.md §11.3.
 - [ ] 1.1.4. Record where the typed fixture specifications shared with Nile
-  Valley's GitOps path live as `docs/adr-004-shared-fixture-specifications.md`.
+  Valley's GitOps path live as
+  `docs/adrs/adr-0004-shared-fixture-specifications.md`.
   - Requires 1.1.1.
   - Decide the owning repository, the consumption mechanism on each side, and
     how versions stay aligned with the platform lock.

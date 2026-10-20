@@ -52,9 +52,11 @@ validation evidence.
 The originating design placed Khufu inside `leynos/nile-valley`. This design
 proposes `leynos/khufu` as the implementation home instead, so that Khufu ships
 as its own Python package and release. The proposal remains provisional until
-ADR-001 is accepted (see §18). Nile Valley keeps the estate manifest
-(`validation-estate.toml`), the regression matrix, and the shared typed fixture
-specifications that its GitOps path also renders.
+ADR 0001 is accepted (see §18 and
+[roadmap task 1.1.1](roadmap.md#11-ratify-the-decisions-that-would-otherwise-force-rework)).
+Nile Valley keeps the estate manifest (`validation-estate.toml`), the
+regression matrix, and the shared typed fixture specifications that its GitOps
+path also renders.
 
 ## 2. Constraints and non-goals
 
@@ -1139,14 +1141,14 @@ _Table 8: Principal risks._
 
 ## 18. Open questions and ADR candidates
 
-- **ADR-001: implementation home.** Proposed: Khufu ships from
+- **ADR 0001: implementation home.** Proposed: Khufu ships from
   `leynos/khufu`, and Nile Valley holds the estate manifest and regression
   matrix (§1.1). Pending acceptance.
-- **ADR-002: fixed substrate.** kind on rootless Podman with no provider
+- **ADR 0002: fixed substrate.** kind on rootless Podman with no provider
   abstraction (§2).
-- **ADR-003: job supervision.** Transient systemd user services as execution
+- **ADR 0003: job supervision.** Transient systemd user services as execution
   owners, SQLite as the ledger (§11).
-- **ADR-004: shared fixture specifications.** Where the typed fixture
+- **ADR 0004: shared fixture specifications.** Where the typed fixture
   specifications shared with Nile Valley's GitOps path live, and how both sides
   consume them (§3.1).
 - **Open:** whether the regression matrix runs on self-hosted rootless Linux
