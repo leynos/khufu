@@ -1,9 +1,11 @@
 # khufu Users' Guide
 
-This guide is for consumer-repository maintainers, coding agents, and reviewers
-who validate Kubernetes applications through Khufu. It documents the planned
-user-facing contract and the repository's current quality gates. Khufu is
-designed but not yet implemented, so treat every command, configuration key,
+This pre-implementation guide is for consumer-repository maintainers, coding
+agents, and reviewers who validate Kubernetes applications through Khufu. No
+Khufu release has been published, so the guide has no release identifier yet.
+Its planned interfaces may change before the first release. It documents the
+planned user-facing contract and the repository's current quality gates. Khufu
+is designed but not yet implemented, so treat every command, configuration key,
 and report field here as a specification that later roadmap tasks implement and
 this guide then tracks.
 

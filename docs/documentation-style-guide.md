@@ -145,6 +145,11 @@ this means operators, end users, or integrators.
   it, cover a complete setup for every supported platform rather than assuming
   one, and state honestly where a feature is unimplemented in the current
   release.
+- **Pre-implementation exception.** Before the first release is published, a
+  user's guide may omit the release identifier. Label it as a
+  pre-implementation specification, state that no release is available, and
+  explain that its planned interfaces may change before the first release.
+  Replace this notice with the exact release identifier once one exists.
 - **Accessibility.** Treat accessibility as two related concerns. Document the
   project's accessible behaviour as a first-class topic: how accessible output
   is selected, by flag and by environment variable; that meaning is never
