@@ -1,6 +1,7 @@
 # Developer guide
 
-This guide explains the contributor workflow for the generated project.
+This guide explains the contributor workflow for the generated project and the
+architecture conventions for Khufu itself.
 
 ## Local workflow
 
@@ -47,6 +48,57 @@ the spelling gate. Spelling uses `typos-config-builder` with scope `all`.
 Run `make audit` as the dependency vulnerability gate. It runs `pip-audit` for
 Python dependencies, and Rust-enabled projects also run `cargo audit` from the
 `rust_extension` crate directory.
+
+## Khufu architecture and toolchain
+
+Khufu is designed but not yet implemented. Its developer-facing architecture
+lives in the [Khufu design](khufu-design.md); this section records the
+conventions a contributor must know before implementation begins.
+
+### Runtime and dependencies
+
+Khufu targets ordinary CPython 3.14 and uses `uv` for environment and lockfile
+management. The planned dependency stack is Cyclopts for command parsing,
+cuprum as the sole external-command execution boundary, femtologging behind a
+narrow logging adapter, and espressoTUI (imported as `espresso`) for the
+optional inspector (design §5.3). The lockfile pins exact versions and
+distribution hashes; minimum-version metadata does not establish compatibility
+(design §5.4). Do not introduce an alternative cluster engine, command runner,
+or logging facade; drift between those seams is the problem Khufu exists to
+remove.
+
+### Package boundaries
+
+The package lives at `khufu/` and follows the hexagonal layout in design §5.1:
+dependencies point inward through `domain`, `application`, `ports`, and
+`adapters`, with `cli`, `tui`, `schemas`, `platform`, and `skills` as
+supporting packages (design §5.2). Domain code must not import terminal,
+subprocess, Kubernetes-client, or logging code; adapters implement ports and
+never decide application policy. The roadmap requires an import-boundary check
+that enforces this rule.
+
+All external commands go through cuprum's approved-program catalogue and typed
+builders. There is no arbitrary `exec` escape hatch, and a catalogue entry for
+`kubectl` is not blanket approval for every subcommand (design §5.3). Command
+descriptors, CLI registration, `agent-context`, and skill examples are
+generated from the same Khufu-owned descriptors, so a new command is added in
+one place.
+
+### Sources of truth
+
+- [Khufu design](khufu-design.md) for architecture, contracts, protocol, jobs,
+  suites, evidence, and verification.
+- [Roadmap](roadmap.md) for delivery order and the acceptance criteria of each
+  numbered task.
+- [Terms of reference](terms-of-reference.md) and [context](context.md) for
+  product scope and vocabulary.
+- [ADR candidates](khufu-design.md#18-open-questions-and-adr-candidates) for
+  decisions awaiting ratification; record a decision in the design and, when
+  substantive, in an ADR before implementing it.
+
+Keep this section current as implementation lands: when a package appears, a
+dependency is added or removed, or a decision is ratified, update the design
+and this guide together.
 
 ## Automation scripts
 
