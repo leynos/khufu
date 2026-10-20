@@ -197,6 +197,13 @@ essentials are:
   capability recorded as a distinct coverage mode; the default never spends API
   credits or contacts production systems.
 
+Each consumer also has a minimum smoke contract in the design (§12.2), and the
+generic bullets above do not lower it. Ghillie, for example, requires full
+runtime configuration, the packaged PostgreSQL driver, domain endpoint
+availability, and a deterministic report-domain scenario with the required
+fixtures or fakes; a health-only profile cannot satisfy full smoke validation.
+The other consumers have equivalent minimums recorded there.
+
 A missing declared functional test blocks the corresponding validation level,
 so a suite cannot report success by skipping the behaviour it exists to prove.
 The GitOps and platform extension suites are deferred and appear in reports as
