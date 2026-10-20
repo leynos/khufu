@@ -169,7 +169,14 @@ this means operators, end users, or integrators.
   unterminated fence, a missing identifier, or a duplicate identifier. Share
   that loader between integration tests and behaviour-driven scenarios, so a
   documented example becomes a contract the implementation must satisfy and
-  cannot drift from the behaviour it claims.
+  cannot drift from the behaviour it claims. A guide clearly labelled as a
+  pre-implementation specification may temporarily describe behaviour that does
+  not yet exist. Before its examples, state that they are planned and not
+  test-exercised, and link to the design that specifies the behaviour. This
+  exception is for specifications only; it does not apply to operational
+  documentation. It expires when the implementation ships: then the examples
+  must be executable and loaded from the published guide by the shared
+  tested-example loader above.
 
 ### Migration guide
 
@@ -712,7 +719,7 @@ contents of the manual.
 ///
 /// # Examples
 ///
-/// ```rust,no_run
+/// ```rust
 /// assert_eq!(add(2, 3), 5);
 /// ```
 #[inline]
@@ -791,7 +798,7 @@ This hierarchy should align with the GIST framework:
   - Phases: 1, 2, 3, …
   - Steps: 1.1, 1.2, 1.3, …
   - Headline tasks: 1.1.1, 1.1.2, 1.1.3, …
-- **Checkboxes:** Precede task and sub-task items with a GitHub Flavored
+- **Checkboxes:** Precede task and sub-task items with a GitHub-flavoured
   Markdown (GFM) checkbox (`[ ]`) to track completion status.
 - **Dependencies:** Note non-linear dependencies explicitly. Where a task
   depends on another task outside its immediate sequence, cite the dependency
