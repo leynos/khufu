@@ -1,9 +1,11 @@
 # khufu Users' Guide
 
-This guide is for consumer-repository maintainers, coding agents, and reviewers
-who validate Kubernetes applications through Khufu. It documents the planned
-user-facing contract and the repository's current quality gates. Khufu is
-designed but not yet implemented, so treat every command, configuration key,
+This pre-implementation guide is for consumer-repository maintainers, coding
+agents, and reviewers who validate Kubernetes applications through Khufu. No
+Khufu release has been published, so the guide has no release identifier yet.
+Its planned interfaces may change before the first release. It documents the
+planned user-facing contract and the repository's current quality gates. Khufu
+is designed but not yet implemented, so treat every command, configuration key,
 and report field here as a specification that later roadmap tasks implement and
 this guide then tracks.
 
@@ -17,6 +19,13 @@ contract in §6.2, the command surface in §9, the agent-native protocol and exi
 codes in §10, durable jobs in §11, and reports in §13. The
 [roadmap](roadmap.md) sequences delivery; this guide will document each command
 as it ships, starting with the Episodic golden path in phase 2.
+
+**Pre-implementation examples:** The planned application examples below have
+not been exercised by tests because their corresponding implementation does not
+exist yet. They are temporary specifications of the
+[Khufu design](khufu-design.md); when that implementation ships, the examples
+must become executable and be loaded from this guide by the shared
+tested-example loader.
 
 ## Prerequisites
 
