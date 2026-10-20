@@ -3,10 +3,23 @@
 This page indexes the generated project's documentation. Browse the guides
 below.
 
+## Product definition
+
+- [Terms of reference](terms-of-reference.md) sets out the problem Khufu
+  solves, its users, scope, success criteria, constraints, and open questions.
+- [Context](context.md) defines Khufu's shared domain vocabulary; read it
+  before the design.
+- [Khufu design](khufu-design.md) explains the architecture, contracts,
+  platform bundle, agent-native protocol, durable jobs, and verification
+  strategy.
+- [Roadmap](roadmap.md) sequences delivery from the demonstrated baseline to
+  the first consolidated release.
+
 ## Project guides
 
-- [User guide](users-guide.md) explains how to use the generated project and
-  its public build and test commands.
+- [User guide](users-guide.md) explains the planned Khufu workflow, contracts,
+  jobs, reports, and constraints, and documents the repository's public build
+  and test commands.
 - [Developer guide](developers-guide.md) explains the contributor workflow and
   points maintainers to script automation standards.
 - [Documentation style guide](documentation-style-guide.md) defines the
