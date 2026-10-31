@@ -152,3 +152,30 @@ def test_both_workflows_declare_least_privilege_permissions(name: str) -> None:
         "coverage-upload" if name == "coverage-main.yml" else "lint-test"
     ].get("permissions")
     assert permissions in ({"contents": "read"}, {}), f"{name} must not write"
+
+
+def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
+    """The publisher measures the same suite as the pull-request lane.
+
+    Tests that need ``actionlint`` skip without it, and a skipped test is
+    uncovered code, so a publisher without the tool measured less coverage than
+    the lane and failed the ratchet against the stored baseline.
+    """
+    install = _step("coverage-main.yml", "coverage-upload", "Install actionlint")
+    pinned = re.search(r"actionlint@(v[0-9.]+)", install["run"])
+    assert pinned is not None, "the publisher must install a pinned actionlint"
+    ci_run = _step("ci.yml", "lint-test", "Install CLI tools")["run"]
+    ci_pinned = re.search(r"actionlint@(v[0-9.]+)", ci_run)
+    assert ci_pinned is not None, "ci.yml must install a pinned actionlint"
+    assert pinned.group(1) == ci_pinned.group(1), (
+        f"the publisher installs actionlint {pinned.group(1)}; "
+        f"ci.yml installs {ci_pinned.group(1)}"
+    )
+    assert "$GITHUB_PATH" in install["run"], (
+        "the tool must reach the PATH of later steps"
+    )
+    steps = _steps("coverage-main.yml", "coverage-upload")
+    names = [step.get("name") for step in steps]
+    assert names.index("Install actionlint") < names.index("Generate coverage"), (
+        "actionlint must be installed before coverage is measured"
+    )
