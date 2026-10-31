@@ -174,12 +174,13 @@ def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
     """
     install = _step("coverage-main.yml", "coverage-upload", "Install actionlint")
     ci_run = _step("ci.yml", "lint-test", "Install CLI tools")["run"]
-    pattern = r"actionlint@(v[0-9.]+)"
+    pattern = r"(?m)^go install github\.com/rhysd/actionlint/cmd/actionlint@(v[0-9.]+)$"
+    path_append = r"(?m)^echo \"\$\(go env GOPATH\)/bin\" >> \"\$GITHUB_PATH\"$"
     versions = [re.findall(pattern, install["run"]), re.findall(pattern, ci_run)]
     steps = _steps("coverage-main.yml", "coverage-upload")
     names = [step.get("name") for step in steps]
     ordered = names.index("Install actionlint") < names.index("Generate coverage")
     assert all(len(found) == 1 for found in versions), ACTIONLINT_MESSAGES["unpinned"]
     assert versions[0] == versions[1], ACTIONLINT_MESSAGES["mismatch"]
-    assert "$GITHUB_PATH" in install["run"], ACTIONLINT_MESSAGES["path"]
+    assert re.search(path_append, install["run"]), ACTIONLINT_MESSAGES["path"]
     assert ordered, ACTIONLINT_MESSAGES["late"]
