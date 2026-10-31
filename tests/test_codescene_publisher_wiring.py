@@ -8,8 +8,6 @@ terms, so a reader of the test suite sees them and a regression in one wiring
 fails here with a message that names it.
 """
 
-from __future__ import annotations
-
 import re
 import typing as typ
 from pathlib import Path
