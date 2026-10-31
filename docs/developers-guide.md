@@ -216,6 +216,15 @@ CodeScene or holds its credential.
 The `generate-coverage` selection in both workflows must match field for field
 (format and interpreter), and `.github/cv005.toml` names the interpreter.
 
+`tests/test_codescene_publisher_wiring.py` states the same invariants as
+behavioural checks in this repository's own terms: the pull-request workflow
+never names CodeScene, the coverage lane runs on pull requests only and
+publishes no artefact, the publisher runs for `main` alone in the `codescene`
+environment, the upload needs both the token check and the main ref, the token
+reaches the uploader as an input rather than an environment, a missing token is
+a warning and not a failure, and the contract checker is pinned to a full
+commit. Each fails when its wiring is removed.
+
 ### The CV-005 contract check
 
 `make test-workflow-contracts` runs the shared `cv005-contracts` checker
