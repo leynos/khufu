@@ -154,6 +154,17 @@ def test_both_workflows_declare_least_privilege_permissions(name: str) -> None:
     assert permissions in ({"contents": "read"}, {}), f"{name} must not write"
 
 
+# Messages for the actionlint test are module constants so that a passing run
+# still executes every line (slipcover counts unexecuted continuation lines of
+# a multi-line assertion message against the coverage ratchet).
+ACTIONLINT_MESSAGES: typ.Final = {
+    "unpinned": "both workflows must install a pinned actionlint",
+    "mismatch": "the publisher and ci.yml must agree on the actionlint version",
+    "path": "the tool must reach the PATH of later steps",
+    "late": "actionlint must be installed before coverage is measured",
+}
+
+
 def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
     """The publisher measures the same suite as the pull-request lane.
 
@@ -168,14 +179,7 @@ def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
     steps = _steps("coverage-main.yml", "coverage-upload")
     names = [step.get("name") for step in steps]
     ordered = names.index("Install actionlint") < names.index("Generate coverage")
-    # Each message is built before its assertion so that a failing run reports it
-    # and a passing run still executes the line (slipcover counts unexecuted
-    # continuation lines against the ratchet).
-    unpinned = "both workflows must install a pinned actionlint"
-    mismatch = f"the publisher and ci.yml must agree on actionlint; saw {versions}"
-    no_path = "the tool must reach the PATH of later steps"
-    too_late = "actionlint must be installed before coverage is measured"
-    assert all(len(found) == 1 for found in versions), unpinned
-    assert versions[0] == versions[1], mismatch
-    assert "$GITHUB_PATH" in install["run"], no_path
-    assert ordered, too_late
+    assert all(len(found) == 1 for found in versions), ACTIONLINT_MESSAGES["unpinned"]
+    assert versions[0] == versions[1], ACTIONLINT_MESSAGES["mismatch"]
+    assert "$GITHUB_PATH" in install["run"], ACTIONLINT_MESSAGES["path"]
+    assert ordered, ACTIONLINT_MESSAGES["late"]
