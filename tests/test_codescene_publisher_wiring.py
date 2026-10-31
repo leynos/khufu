@@ -152,3 +152,35 @@ def test_both_workflows_declare_least_privilege_permissions(name: str) -> None:
         "coverage-upload" if name == "coverage-main.yml" else "lint-test"
     ].get("permissions")
     assert permissions in ({"contents": "read"}, {}), f"{name} must not write"
+
+
+# Messages for the actionlint test are module constants so that a passing run
+# still executes every line (slipcover counts unexecuted continuation lines of
+# a multi-line assertion message against the coverage ratchet).
+ACTIONLINT_MESSAGES: typ.Final = {
+    "unpinned": "both workflows must install a pinned actionlint",
+    "mismatch": "the publisher and ci.yml must agree on the actionlint version",
+    "path": "the tool must reach the PATH of later steps",
+    "late": "actionlint must be installed before coverage is measured",
+}
+
+
+def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
+    """The publisher measures the same suite as the pull-request lane.
+
+    Tests that need ``actionlint`` skip without it, and a skipped test is
+    uncovered code, so a publisher without the tool measured less coverage than
+    the lane and failed the ratchet against the stored baseline.
+    """
+    install = _step("coverage-main.yml", "coverage-upload", "Install actionlint")
+    ci_run = _step("ci.yml", "lint-test", "Install CLI tools")["run"]
+    pattern = r"(?m)^go install github\.com/rhysd/actionlint/cmd/actionlint@(v[0-9.]+)$"
+    path_append = r"(?m)^echo \"\$\(go env GOPATH\)/bin\" >> \"\$GITHUB_PATH\"$"
+    versions = [re.findall(pattern, install["run"]), re.findall(pattern, ci_run)]
+    steps = _steps("coverage-main.yml", "coverage-upload")
+    names = [step.get("name") for step in steps]
+    ordered = names.index("Install actionlint") < names.index("Generate coverage")
+    assert all(len(found) == 1 for found in versions), ACTIONLINT_MESSAGES["unpinned"]
+    assert versions[0] == versions[1], ACTIONLINT_MESSAGES["mismatch"]
+    assert re.search(path_append, install["run"]), ACTIONLINT_MESSAGES["path"]
+    assert ordered, ACTIONLINT_MESSAGES["late"]
