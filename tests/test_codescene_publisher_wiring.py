@@ -162,20 +162,20 @@ def test_the_publisher_installs_actionlint_at_the_version_ci_uses() -> None:
     the lane and failed the ratchet against the stored baseline.
     """
     install = _step("coverage-main.yml", "coverage-upload", "Install actionlint")
-    pinned = re.search(r"actionlint@(v[0-9.]+)", install["run"])
-    assert pinned is not None, "the publisher must install a pinned actionlint"
     ci_run = _step("ci.yml", "lint-test", "Install CLI tools")["run"]
-    ci_pinned = re.search(r"actionlint@(v[0-9.]+)", ci_run)
-    assert ci_pinned is not None, "ci.yml must install a pinned actionlint"
-    assert pinned.group(1) == ci_pinned.group(1), (
-        f"the publisher installs actionlint {pinned.group(1)}; "
-        f"ci.yml installs {ci_pinned.group(1)}"
-    )
-    assert "$GITHUB_PATH" in install["run"], (
-        "the tool must reach the PATH of later steps"
-    )
+    pattern = r"actionlint@(v[0-9.]+)"
+    versions = [re.findall(pattern, install["run"]), re.findall(pattern, ci_run)]
     steps = _steps("coverage-main.yml", "coverage-upload")
     names = [step.get("name") for step in steps]
-    assert names.index("Install actionlint") < names.index("Generate coverage"), (
-        "actionlint must be installed before coverage is measured"
-    )
+    ordered = names.index("Install actionlint") < names.index("Generate coverage")
+    # Each message is built before its assertion so that a failing run reports it
+    # and a passing run still executes the line (slipcover counts unexecuted
+    # continuation lines against the ratchet).
+    unpinned = "both workflows must install a pinned actionlint"
+    mismatch = f"the publisher and ci.yml must agree on actionlint; saw {versions}"
+    no_path = "the tool must reach the PATH of later steps"
+    too_late = "actionlint must be installed before coverage is measured"
+    assert all(len(found) == 1 for found in versions), unpinned
+    assert versions[0] == versions[1], mismatch
+    assert "$GITHUB_PATH" in install["run"], no_path
+    assert ordered, too_late
