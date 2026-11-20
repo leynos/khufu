@@ -6,8 +6,9 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
 `Conformance basis`, and `Verification plan` must be kept up to date as work
 proceeds.
 
-Status: DRAFT (expert review applied; awaiting user approval of D3-D6 and a
-user decision on D7)
+Status: DRAFT (expert review applied; the user decided D7 (Nile Valley owns the
+fixture specifications) and the Python Package Index (PyPI) distribution name
+`khufu-cli` on 2026-11-20; awaiting approval to implement)
 
 Branch: `1-1-ratify-early-decisions`, stacked on `regenerate-typos-config` (an
 unrelated regeneration of `typos.toml` by the spelling gate, kept in its own
@@ -41,16 +42,18 @@ accepted ADRs:
 
 - `docs/adrs/adr-0001-implementation-home.md` names `leynos/khufu` as the code
   home, Nile Valley as the home of `validation-estate.toml` (the estate
-  manifest) and the regression matrix, and the release channel consumers pin.
+  manifest) and the regression matrix, and the release channel consumers pin:
+  the `khufu-cli` distribution on PyPI, which installs the `khufu` import
+  package and command.
 - `docs/adrs/adr-0002-fixed-kind-rootless-substrate.md` fixes Linux, rootless
   Podman, kind, kubectl, and Helm as the only supported stack.
 - `docs/adrs/adr-0003-systemd-user-service-supervision.md` makes transient
   systemd user services the owners of job workers, makes waiting command-line
   processes observers, defers the foreground mode to roadmap task 5.1.2, and
   lists the session-survival limits that `khufu doctor` must report.
-- `docs/adrs/adr-0004-shared-fixture-specifications.md` names the owning
-  repository of the shared fixture specifications, how each side consumes them,
-  and how their versions stay aligned with the platform lock.
+- `docs/adrs/adr-0004-shared-fixture-specifications.md` names Nile Valley as
+  the owner of the shared fixture specifications, states how each side consumes
+  them, and states how their versions stay aligned with the platform lock.
 
 The design, terms-of-reference open-questions register, context, users' guide,
 developers' guide, contents index, and roadmap then agree with those ADRs. In
@@ -96,18 +99,20 @@ ratified.
   screen-reader description before any diagram, external sources as numbered
   footnotes, and roadmap tasks cited by number and short description, because
   `mapsplice` may renumber them.
-- Acceptance authority (D2): approval of this plan ratifies decisions D3-D6;
-  D7 requires a separate, explicit user answer before `EP-M5` starts. Each
-  ADR's Status date is the date of the corresponding user approval. Editing ADR
-  text before the implementation pull request merges is normal review. After
-  merge, changes follow the style guide's amendment and supersession rules.
+- Acceptance authority (D2): the user decided D7 and the distribution name in
+  D3 on 2026-11-20; approval of this plan ratifies the remaining decisions
+  (D3-D6). Each ADR's Status date is the date of the corresponding user
+  approval. Editing ADR text before the implementation pull request merges is
+  normal review. After merge, changes follow the style guide's amendment and
+  supersession rules.
 - The terms of reference take precedence over the design and are edited only
   in the §9 open-questions register (resolution paths). Their needs statements
   (§4.2, §4.3 table, table 3) stay unchanged; see D9.
 - Do not change `.github/workflows/release.yml`, repository settings (for
-  example, GitHub immutable releases or tag rulesets), or any other repository.
-  ADRs record those changes as consequences, and the roadmap gains follow-up
-  tasks.
+  example, GitHub immutable releases or tag rulesets), PyPI project settings
+  (for example, registering a trusted publisher for `khufu-cli`), or any other
+  repository. ADRs record those changes as consequences, and the roadmap gains
+  follow-up tasks.
 - Do not create `docs/repository-layout.md`. Its absence is a pre-existing gap
   outside this item.
 - Test modules live under `tests/` (AGENTS.md). No code file exceeds 400
@@ -119,8 +124,11 @@ ratified.
   and `hypothesis` to the `dev` dependency group with exact pins; add `"docs/"`
   to `[tool.mutmut] also_copy`; add `pythonpath = ["."]` to
   `[tool.pytest.ini_options]`; add pytest-bdd step decorators and
-  `@pytest.fixture` to a Vulture `ignore_decorators` list. Refresh `uv.lock`
-  with `uv lock`. No runtime dependency is added. `syrupy` is not added (D8).
+  `@pytest.fixture` to a Vulture `ignore_decorators` list; in `EP-M2`, rename
+  the distribution from `name = "khufu"` to `name = "khufu-cli"` (the import
+  package `khufu/`, `[tool.uv] packages = ["khufu"]`, and `khufu.PACKAGE_NAME`
+  stay unchanged). Refresh `uv.lock` with `uv lock` after each change. No
+  runtime dependency is added. `syrupy` is not added (D8).
 - Implementation begins only after the user approves this plan.
 
 ## Tolerances (exception triggers)
@@ -147,7 +155,7 @@ ExecPlan is excluded from every count.
   `uv.lock`.
 - Code: stop above 550 net added lines under `tests/`. Estimate 420: rules
   module 150, rule tests 120, repository tests 70, BDD binding and feature 80.
-- Configuration: stop above 20 net lines in `pyproject.toml`. Estimate 7.
+- Configuration: stop above 20 net lines in `pyproject.toml`. Estimate 8.
 - Documentation: stop above 1,300 net lines. Estimate 1,050: four ADRs at
   about 180-240 lines each (about 850) and about 200 lines of edits across the
   seven existing documents.
@@ -158,12 +166,12 @@ ExecPlan is excluded from every count.
   their transitive dependencies (`mako`, `parse`, `parse-type`,
   `gherkin-official`).
 - Architecture: stop if an ADR's direction must depart from the approved
-  Decision log entries, or if the user's D7 answer requires a
-  terms-of-reference scope change.
+  Decision log entries, or if recording D7 requires a terms-of-reference scope
+  change.
 - Iterations: stop if a gate still fails after 3 fix attempts for one cause.
 - Time: stop if any milestone exceeds 4 hours of active work.
-- Ambiguity: stop and present options if the D7 answer leaves the consumption
-  mechanism or alignment rule open.
+- Ambiguity: stop and present options if Nile Valley's own plans contradict
+  the consumption mechanism or alignment rule recorded in D7.
 
 Budget evidence: this repository has no earlier ExecPlans (`docs/execplans/` is
 created by this plan), so no historical budget revisions exist. Expert review
@@ -174,21 +182,33 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
 
 ## Risks
 
-- Risk: the D7 decision (fixture-specification ownership) is contested between
-  Khufu and Nile Valley. Severity: high. Likelihood: medium. Mitigation: D7 is
-  presented neutrally with a recommendation and gates `EP-M5` only; `EP-M1` to
-  `EP-M4` proceed without it.
+- Risk: Nile Valley has not yet published a fixture-specification artefact,
+  so ADR 0004 records a contract that the owning repository has not adopted.
+  Severity: medium. Likelihood: high. Mitigation: ADR 0004 lists Nile Valley
+  adoption as a known limitation, and roadmap 5.1.1 gains a follow-up; Khufu's
+  platform-lock work (roadmap 3.1.1) records the digest when the artefact
+  exists.
 - Risk: the foreground-mode deferral leaves CI hosts without a usable user
   manager unable to run jobs until roadmap 5.1.2. Severity: medium. Likelihood:
   high. Mitigation: ADR 0003 states this limit, `doctor` reports it, and the
   users' guide says so; early slices run on developer hosts.
-- Risk: the release channel (D3) depends on GitHub immutable releases and a
-  tag ruleset, both absent today, while `.github/workflows/release.yml` already
-  publishes on any pushed `v*.*.*` tag and uploads assets after publication with
-  `--clobber`. Severity: medium. Likelihood: high. Mitigation: ADR 0001 makes
-  immutable, atomic publication a precondition of the first tag; a roadmap
-  follow-up is attached to the first task that needs a pinned release; this
-  work pushes no tag.
+- Risk: the release channel (D3) needs PyPI publication that does not exist:
+  `.github/workflows/release.yml` publishes only to GitHub Releases, uploads
+  assets after publication with `--clobber`, and runs on any pushed `v*.*.*`
+  tag; GitHub immutable releases and tag rules are off; no trusted publisher is
+  registered for `khufu-cli`. Severity: medium. Likelihood: high. Mitigation:
+  ADR 0001 makes trusted publishing, tag protection, and version checks
+  preconditions of the first tag; a roadmap follow-up is attached to the first
+  task that needs a pinned release; this work pushes no tag.
+- Risk: PyPI rejects distributions with direct-URL dependencies, and
+  `femtologging` is not on PyPI, so the first `khufu-cli` release that depends
+  on it cannot be uploaded. Severity: high. Likelihood: high. Mitigation: ADR
+  0001 records "femtologging published on PyPI" as a precondition, and roadmap
+  1.3.1 (locked runtime dependencies) gains a sub-bullet saying so.
+- Risk: someone else registers `khufu-cli` on PyPI before the first release.
+  Severity: medium. Likelihood: low. Mitigation: the PR description recommends
+  that the owner register a pending trusted publisher for `khufu-cli` now; this
+  is an owner action outside the plan's authority.
 - Risk: documentation-conformance tests become brittle prose checks.
   Severity: medium. Likelihood: medium. Mitigation: tests assert structure and
   a small set of stable identifiers (repository names, file names, option
@@ -199,10 +219,11 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   gate. Severity: low. Likelihood: medium. Mitigation: `EP-M1` runs every gate
   before any ADR work; steps reuse the rule functions and one shared text
   builder.
-- Risk: GitHub release downloads are unavailable or blocked by egress rules
-  (`release-assets.githubusercontent.com`). Severity: medium. Likelihood: low.
-  Mitigation: ADR 0001 records integrity, not availability, as the guarantee
-  and leaves mirroring or caching to the estate.
+- Risk: PyPI is unavailable or blocked by egress rules on a validation host.
+  Severity: medium. Likelihood: low. Mitigation: ADR 0001 records that pins
+  guarantee integrity, not availability, and leaves mirroring or caching to the
+  estate; ordinary validation runs from an installed toolchain and contacts no
+  index (design §4.3).
 
 ## Progress
 
@@ -217,12 +238,14 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
 - [x] (2026-11-20 13:40Z) Expert review (release engineering, systemd and
   rootless containers, Python test architecture, documentation governance)
   applied; see the revision note.
+- [x] (2026-11-20 15:10Z) User decided D7 (option B: Nile Valley owns the
+  fixture specifications) and set the PyPI distribution name to `khufu-cli`; D3
+  revised accordingly.
 - [ ] Plan approved by the user (D3-D6); record `APPROVED_PLAN_SHA`.
 - [ ] `EP-M1` decision-record suite and substrate fitness rules.
 - [ ] `EP-M2` ADR 0001 accepted and cross-referenced.
 - [ ] `EP-M3` ADR 0002 accepted and cross-referenced.
 - [ ] `EP-M4` ADR 0003 accepted; foreground and session text reconciled.
-- [ ] User answer on D7 recorded.
 - [ ] `EP-M5` ADR 0004 accepted and cross-referenced.
 - [ ] `EP-M6` documentation closure, roadmap 1.1 marked done, full gates.
 
@@ -233,14 +256,15 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   `curl -s https://pypi.org/pypi/khufu/json`. Impact: `pip install khufu`,
   `uv tool install khufu`, and `uvx khufu` fetch the wrong package, and an exact
   `khufu==1.3.x` pin against an index would match that project once Khufu
-  reaches 1.x. This drives D3.
+  reaches 1.x. The name `khufu-cli` was unclaimed on 2026-11-20
+  (`https://pypi.org/pypi/khufu-cli/json` returned HTTP 404). This drives D3.
 - Observation: `femtologging` is not on PyPI; `espressoTUI` is, published by
   its upstream (`kimusan/espresso`), but its import name `espresso` collides
   with an unrelated PyPI distribution named `espresso`. Evidence: PyPI JSON
-  API. Impact: Khufu's dependency set needs direct-URL, hash-pinned resolution
-  (already required by roadmap 1.3.1), and PyPI rejects uploads whose metadata
-  contains direct-URL dependencies, so PyPI cannot be Khufu's channel while it
-  depends on femtologging that way.
+  API. Impact: PyPI rejects uploads whose metadata contains direct-URL
+  dependencies, so `femtologging` must be published on PyPI before the first
+  `khufu-cli` release that depends on it. Installing `espressoTUI` alone is
+  safe; nothing should install a distribution named `espresso`.
 - Observation: GitHub immutable releases are disabled for `leynos/khufu`, no
   tag rulesets exist, and no release has been published. Evidence:
   `gh api repos/leynos/khufu/immutable-releases` returned
@@ -293,41 +317,49 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   `## Known risks and limitations`. Rationale: required order and roadmap
   1.1.1's explicit request for consequences are both satisfied. Date/Author:
   2026-11-20, planning agent; revised after governance review.
-- D2. Decision: approval of this plan ratifies D3-D6; D7 is ratified only by
-  an explicit user answer before `EP-M5`. ADRs are committed as `Accepted` with
-  the date of the relevant approval; text may change in pull-request review
-  before merge. Rationale: plan approval approves directions, so each direction
-  needs an identifiable approval; the earlier draft bundled D7 into plan
-  approval, which review rejected. Date/Author: 2026-11-20, planning agent.
-- D3. Decision (ADR 0001, release channel): Khufu releases are GitHub Releases
-  of `leynos/khufu`, created from immutable `vX.Y.Z` tags. Each release carries
-  the pure Python wheel, a hash-pinned lock of the full runtime dependency set
-  (the PEP 751 `pylock.toml` format, or a requirements file with `--hash`
-  entries), and a `SHA256SUMS` file. Consumers and the estate manifest pin a
-  release by version, tag, commit SHA, wheel URL and SHA-256, and
-  dependency-lock URL and SHA-256; installs use hash checking
-  (`--require-hashes` or the equivalent `uv` lock). Nothing resolves `khufu` by
-  name from PyPI or any index; the ADR names the unsafe commands
-  (`pip install khufu`, `uv tool install khufu`, `uvx khufu`) and the safe forms
-  (`uvx --from 'khufu @ <wheel URL>#sha256=<digest>' khufu`, or a
-  `[tool.uv.sources]` URL entry whose `uv.lock` records the hash). A release
-  candidate is a PEP 440 pre-release (`X.Y.ZrcN`) published the same way, or a
-  local build selected by explicit path; either identity is recorded in the
-  report (design §4.3). Preconditions before the first tag: GitHub immutable
-  releases enabled; a tag ruleset restricting `refs/tags/v*` to release
-  maintainers; the workflow refusing tags that do not match
-  `^v\d+\.\d+\.\d+(rc\d+)?$` or do not equal `project.version`; publication as
-  draft, upload, then publish; `gh release verify` after publication.
-  Rationale: the repository already builds a pure wheel on tag push; PyPI name
-  resolution fetches an unrelated project; PyPI rejects packages with
-  direct-URL dependencies, which femtologging requires; design §4.3 demands
-  exact pins and forbids per-consumer resolution of unrelated dependency sets;
-  immutable releases make a pinned URL's content unchangeable (integrity, not
-  availability: a release can still be deleted). Rejected: PyPI under a new
-  distribution name (blocked by direct-URL dependencies and adds a second
-  namespace to govern); Git source pins (`git+https`) (rebuild on every install
-  and pin a commit rather than a qualified artefact). Date/Author: 2026-11-20,
-  planning agent; revised after release-engineering review.
+- D2. Decision: approval of this plan ratifies D3-D6; D7 was ratified by an
+  explicit user answer on 2026-11-20. ADRs are committed as `Accepted` with the
+  date of the relevant approval; text may change in pull-request review before
+  merge. Rationale: plan approval approves directions, so each direction needs
+  an identifiable approval; the earlier draft bundled D7 into plan approval,
+  which review rejected. Date/Author: 2026-11-20, planning agent.
+- D3. Decision (ADR 0001, release channel; distribution name set by the user
+  on 2026-11-20): Khufu is published on PyPI as the distribution `khufu-cli`,
+  which installs the `khufu` import package and the `khufu` command. Releases
+  are cut from protected `vX.Y.Z` tags of `leynos/khufu`; the release workflow
+  uploads the wheel and source distribution to PyPI through trusted publishing
+  (OpenID Connect from GitHub Actions, with PEP 740 attestations) and creates a
+  GitHub Release for the same tag carrying release notes, a hash-pinned lock of
+  the full runtime dependency set (PEP 751 `pylock.toml` format, or a
+  requirements file with `--hash` entries), and a `SHA256SUMS` file. Consumers
+  and the estate manifest pin a release by distribution name and exact version
+  (`khufu-cli==X.Y.Z`), the wheel's SHA-256, the commit SHA of the tag, and the
+  dependency lock's SHA-256; installs use hash checking (a `uv.lock` or
+  `--require-hashes`). The ADR names the unsafe commands, which fetch an
+  unrelated project or a floating version (`pip install khufu`,
+  `uv tool install khufu`, `uvx khufu`, and an unpinned `khufu-cli`), and the
+  safe forms (`uvx --from 'khufu-cli==X.Y.Z' khufu` or
+  `uv tool install 'khufu-cli==X.Y.Z'` constrained by the release's hashed
+  lock, or a project dependency recorded in `uv.lock`). A release candidate is
+  a PEP 440 pre-release (`X.Y.ZrcN`) published the same way and selected
+  explicitly, or a local build selected by explicit path; either identity is
+  recorded in the report (design §4.3). Preconditions before the first tag: a
+  trusted publisher registered for `khufu-cli` on PyPI; `femtologging`
+  published on PyPI, because PyPI rejects direct-URL dependencies; a tag
+  ruleset restricting `refs/tags/v*` to release maintainers; the workflow
+  refusing tags that do not match `^v\d+\.\d+\.\d+(rc\d+)?$` or do not equal
+  `project.version`; GitHub immutable releases enabled, with the GitHub Release
+  created as a draft, given its assets, then published. Rationale: the user
+  chose PyPI under `khufu-cli`; PyPI never allows a file name to be
+  re-uploaded, even after deletion, so a pinned version and hash cannot change
+  underneath a consumer (integrity, not availability: a release can be yanked
+  or deleted); standard installers resolve it without direct URLs; the distinct
+  name avoids the unrelated `khufu` project; design §4.3 demands exact pins,
+  which the hashed lock supplies. Rejected: GitHub Releases as the only channel
+  with direct-URL pins (the earlier draft; harder for consumers to express and
+  not chosen by the user); Git source pins (`git+https`) (rebuild on every
+  install and pin a commit rather than a qualified artefact). Date/Author:
+  2026-11-20, planning agent; distribution name and channel decided by the user.
 - D4. Decision (ADR 0002, enforcement): add fitness rules now that fail when
   someone introduces a provider-extension surface: any `[project.entry-points]`
   group in `pyproject.toml` (console scripts belong in `[project.scripts]`,
@@ -410,10 +442,10 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   the mode; roadmap 5.1.3 (the regression matrix) already requires 5.1.2, so no
   matrix runner needs a workaround. Date/Author: 2026-11-20, planning agent;
   revised after systemd and governance review.
-- D7. Decision required before `EP-M5` (ADR 0004, fixture-specification
-  ownership). The question for the user: which repository owns the source of
-  the typed fixture specifications for shared data services (initially
-  CloudNativePG (CNPG) PostgreSQL clusters and Hyperspike Valkey)?
+- D7. Decision (ADR 0004, fixture-specification ownership; decided by the
+  user on 2026-11-20: option B). The question was which repository owns the
+  source of the typed fixture specifications for shared data services
+  (initially CloudNativePG (CNPG) PostgreSQL clusters and Hyperspike Valkey).
 
   Option A (Khufu owns): specifications ship in each Khufu release beside the
   platform lock; Nile Valley vendors them from the Khufu release pinned in
@@ -424,10 +456,10 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   alignment, or follow Khufu, which makes every production platform upgrade
   wait for a Khufu release.
 
-  Option B (Nile Valley owns, recommended): Nile Valley owns the specifications
-  and the production operator pins as the estate baseline, and publishes them
-  as a digest-addressed, language-neutral JSON artefact (one canonical JSON
-  bundle, or a sorted manifest of per-file SHA-256 digests, so the digest is
+  Option B (Nile Valley owns; chosen): Nile Valley owns the specifications and
+  the production operator pins as the estate baseline, and publishes them as a
+  digest-addressed, language-neutral JSON artefact (one canonical JSON bundle,
+  or a sorted manifest of per-file SHA-256 digests, so the digest is
   reproducible). Khufu vendors a pinned revision into its release, records the
   upstream revision and digest in `platform.lock.toml`, and qualifies it
   locally. Nile Valley's renderers read the same artefact from its own tree,
@@ -448,8 +480,8 @@ contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
   Valley's OpenTofu decodes the data (left to Nile Valley; OpenTofu's `file()`
   reads only local files and cannot validate JSON Schema, so Nile Valley CI
   validates and its tree holds the artefact). Date/Author: 2026-11-20, planning
-  agent; reversed from the draft's option A after release-engineering review;
-  awaiting the user's answer.
+  agent recommended option B after release-engineering review reversed the
+  draft's option A; the user accepted the recommendation on 2026-11-20.
 - D8. Decision (verification shape): validate this documentary change with a
   small decision-record suite: pure rule functions in
   `tests/decision_records.py`; parameterized truth-table tests and two
@@ -581,8 +613,10 @@ External facts gathered during planning, each an axiom below:
   published, assets cannot be added, modified, or deleted and the tag cannot be
   moved; a deleted release's tag cannot be reused; the tag is unprotected until
   publication.
-- uv documentation: PyPI does not accept packages with direct-URL
-  dependencies.
+- PyPI and uv documentation: PyPI does not accept distributions whose
+  metadata contains direct-URL dependencies; PyPI never allows a file name to
+  be uploaded twice, even after deletion; trusted publishing lets a GitHub
+  Actions workflow upload without a long-lived token.
 
 Skills for the implementer: `execplans`, `hexagonal-architecture` (pure rules
 versus the thin filesystem edge), `python-router`, `python-testing`,
@@ -633,8 +667,9 @@ Gaps at the base revision:
   mode as current.
 - `GAP-SESSION-LIMITS`: no document enumerates session-survival limits;
   roadmap 2.1.1 omits them.
-- `GAP-RELEASE-CHANNEL`: no channel is defined; the PyPI name is taken;
-  immutable releases and tag rules are off.
+- `GAP-RELEASE-CHANNEL`: no channel is defined; the PyPI name `khufu` is
+  taken, `khufu-cli` is unregistered, and the release workflow publishes only
+  to GitHub Releases; immutable releases and tag rules are off.
 - `GAP-FIXTURE-ALIGNMENT`: nothing states how specification versions align
   with the platform lock; design §1.1 presupposes an owner that §18 leaves open.
 - `GAP-ADR-INDEX`: `docs/contents.md` indexes no ADRs.
@@ -711,10 +746,16 @@ reports every problem.
   findings.
 - `AXIOM-KIND-ROOTLESS`: kind's documented rootless requirements and hazards.
   ADR 0002 depends on them; roadmap 2.1.1 and 2.1.2 test them.
-- `AXIOM-GH-IMMUTABLE`: GitHub immutable releases guarantee integrity of a
-  published tag and its assets, not availability. ADR 0001 depends on it.
+- `AXIOM-PYPI-IMMUTABLE`: PyPI never accepts a second upload of a file name,
+  even after deletion, so a pinned version and wheel hash identify one
+  artefact; this guarantees integrity, not availability (releases can be yanked
+  or deleted). ADR 0001 depends on it.
 - `AXIOM-PYPI-DIRECT-URL`: PyPI rejects distributions whose metadata contains
-  direct-URL dependencies. ADR 0001 depends on it.
+  direct-URL dependencies. ADR 0001 depends on it (the `femtologging`
+  precondition).
+- `AXIOM-GH-IMMUTABLE`: GitHub immutable releases lock a published tag and its
+  assets. ADR 0001 depends on it for the GitHub Release that records each tag's
+  provenance and dependency lock.
 - `AXIOM-PYTEST-BDD`: `pytest-bdd` 9 binds Gherkin steps to Python functions,
   applies pytest marks to `@scenario`-bound tests, skips already-bound
   scenarios in a later `scenarios()` call, and runs under `pytest-xdist`. The
@@ -784,10 +825,10 @@ Required identifiers per ADR, matched in `## Decision outcome` only. They are
 stable names, not prose or roadmap numbers:
 
 ```plaintext
-0001: leynos/khufu, leynos/nile-valley, validation-estate.toml, SHA-256
+0001: leynos/khufu, leynos/nile-valley, validation-estate.toml, khufu-cli, SHA-256
 0002: --provider, --engine, k3d, Docker, rootful
 0003: systemd-run --user, InvocationID, linger, doctor
-0004: platform.lock.toml, digest, plus the owning repository name from the D7 answer
+0004: leynos/nile-valley, platform.lock.toml, digest
 ```
 
 ### Formal verification decision
@@ -932,10 +973,11 @@ Create `docs/adrs/adr-0001-implementation-home.md`, titled
   which repository hosts the implementation; design §4.3 requires exact pins
   without network discovery; Nile Valley is an OpenTofu, Flux, and Python
   platform repository whose cadence follows cloud infrastructure; the PyPI name
-  `khufu` belongs to an unrelated project.
+  `khufu` belongs to an unrelated project, so the distribution is named
+  `khufu-cli` (user decision, 2026-11-20).
 - Decision drivers: one installable package with its own release; anti-drift
-  enforcement in one place; exact, hash-verified pins; no dependency-confusion
-  exposure.
+  enforcement in one place; exact, hash-verified pins; standard installers; no
+  dependency-confusion exposure.
 - Options considered: A, Khufu in `leynos/khufu` (chosen); B, Khufu inside
   `leynos/nile-valley` (the source design); C, a separately published package
   inside Nile Valley. Compare release coupling, CI scope, review ownership, and
@@ -943,31 +985,39 @@ Create `docs/adrs/adr-0001-implementation-home.md`, titled
 - Decision outcome: code home `leynos/khufu`; estate manifest
   `validation-estate.toml` and the regression matrix in `leynos/nile-valley`;
   Nile Valley responsibilities (estate manifest, regression matrix, GitOps
-  rendering); the release channel and pin shape per D3, including the unsafe
-  and safe install commands. State in plain text, without a link, that
-  ownership of the shared fixture specifications is decided separately (design
-  §18, ADR 0004). `### Consequences`: the estate-manifest fields (version, tag,
-  commit SHA, wheel URL and SHA-256, dependency-lock URL and SHA-256, platform
-  lock digest, fixture-specification digest); the workspace pin shape for
-  roadmap 1.5.2 (reject a `khufu` pin without URL and hash); the release
-  preconditions from D3; candidates per D3; Nile Valley CI fetches the pinned
-  assets, never "latest".
+  rendering, and the shared fixture specifications, recorded in ADR 0004); the
+  release channel and pin shape per D3: the `khufu-cli` distribution on PyPI,
+  the `khufu` import package and command, and the unsafe and safe install
+  commands. Mention ADR 0004 in plain text, without a link, until it exists.
+  `### Consequences`: the estate-manifest fields (distribution name, version,
+  tag, commit SHA, wheel SHA-256, dependency-lock SHA-256, platform lock
+  digest, fixture-specification digest); the workspace pin shape for roadmap
+  1.5.2 (reject a pin that is not `khufu-cli` at an exact version with hashes,
+  and reject any pin naming the `khufu` distribution); the release
+  preconditions from D3; candidates per D3; Nile Valley CI installs the pinned
+  version, never "latest".
 - Known risks and limitations: integrity is guaranteed, availability is not (a
-  release can be deleted; CI runners start with empty caches; egress to
-  `release-assets.githubusercontent.com` is required); a deleted release's tag
-  cannot be reused; the regression-matrix runner choice (design §18 open item)
-  remains with roadmap 5.1.3.
+  release can be yanked or deleted; CI runners start with empty caches; egress
+  to PyPI is required for installation); the first release waits for
+  `femtologging` on PyPI; the regression-matrix runner choice (design §18 open
+  item) remains with roadmap 5.1.3.
 
-Also: rewrite only the provisional sentence of design §1.1 (lines 54-56) to
-cite the accepted ADR, leaving the fixture clause (lines 57-59) unchanged until
-`EP-M5`; link the ADR from design §4.3 and state the pin shape; mark design
-§18's first bullet accepted with a link; set the terms-of-reference §9
-implementation-home row's path to the ADR link; create the "Decision records"
-group in `docs/contents.md` with this ADR; add a sub-bullet to roadmap 2.6.4
-("Switch Episodic's local validation entry point to Khufu behind a thin
-delegate") requiring that the pinned Khufu release be published per ADR 0001's
-preconditions. Remove the two 0001 xfail markers. Gate and commit ("Accept ADR
-0001: implementation home").
+Also: in `pyproject.toml`, rename the distribution to `name = "khufu-cli"` and
+run `uv lock` (the import package, `[tool.uv] packages`, and
+`khufu.PACKAGE_NAME` stay `khufu`; `make build-release` must then produce
+`khufu_cli-*.whl`); rewrite only the provisional sentence of design §1.1 (lines
+54-56) to cite the accepted ADR, leaving the fixture clause (lines 57-59),
+which already matches D7, for `EP-M5` to link; link the ADR from design §4.3
+and state the pin shape and distribution name; update `README.md` only if it
+shows an install command; mark design §18's first bullet accepted with a link;
+set the terms-of-reference §9 implementation-home row's path to the ADR link;
+create the "Decision records" group in `docs/contents.md` with this ADR; add a
+sub-bullet to roadmap 2.6.4 ("Switch Episodic's local validation entry point to
+Khufu behind a thin delegate") requiring that the pinned `khufu-cli` release be
+published per ADR 0001's preconditions, and a sub-bullet to roadmap 1.3.1 ("Add
+locked runtime dependencies …") requiring `femtologging` to be published on
+PyPI. Remove the two 0001 xfail markers. Gate and commit ("Accept ADR 0001:
+implementation home").
 
 ### `EP-M3` ADR 0002: fixed kind rootless substrate
 
@@ -1032,8 +1082,8 @@ entry. Remove the two 0003 xfail markers. Gate and commit.
 
 ### `EP-M5` ADR 0004: shared fixture specifications
 
-Assigned: `REQ-FIXTURES`, `GAP-FIXTURE-ALIGNMENT`, D7. Starts only after the
-user's answer on D7 is recorded in `Decision log` and `Progress`.
+Assigned: `REQ-FIXTURES`, `GAP-FIXTURE-ALIGNMENT`, D7 (option B, decided by the
+user on 2026-11-20).
 
 Create `docs/adrs/adr-0004-shared-fixture-specifications.md`, titled
 `...0004: Shared fixture specifications`. Context: Nile Valley's OpenTofu
@@ -1042,29 +1092,33 @@ their own operator pins; Khufu's renderers will render the same resources for
 direct Helm execution; design §3.2's Valkey resource-identity hazard shows the
 cost of divergence; design §7.1 makes the lock own the custom resource
 definition (CRD) schemas and operator versions Khufu qualifies. Drivers: one
-specification source, one version axis, language neutrality (Python and
-OpenTofu), no dependency from production onto a local-validation tool unless
-the user chooses it, no network discovery. Options: A, B, and C from D7 in a
+specification source, one version axis owned by the estate owner, language
+neutrality (Python and OpenTofu), no dependency from production onto a
+local-validation tool, no network discovery. Options: A, B, and C from D7 in a
 captioned table comparing version axes, dependency direction, and each side's
-consumption mechanism. Decision outcome: the chosen owner; the artefact
-identity (digest-addressed JSON with a reproducible digest); Khufu-side
-consumption (vendored or packaged files, digest recorded in
-`platform.lock.toml`); Nile Valley-side consumption (artefact in its own tree,
-validated in its CI); the alignment rule. Layout is left to roadmap 3.1.1 and
-OpenTofu decoding to Nile Valley. `### Consequences`: design and context
-wording; the GitOps suite (design §12.1, roadmap 7.1.1) renders from these
-specifications; Nile Valley adoption is a Nile Valley change.
+consumption mechanism. Decision outcome: `leynos/nile-valley` owns the
+specifications and the production operator pins as the estate baseline; the
+artefact is digest-addressed JSON with a reproducible digest (one canonical
+bundle, or a sorted manifest of per-file SHA-256 digests); Khufu vendors a
+pinned revision into its release and records the upstream revision and digest in
+`platform.lock.toml`; Nile Valley's renderers read the same artefact from its
+own tree and its CI validates it; the alignment rule is that the regression
+matrix in Nile Valley CI fails unless the approved Khufu release's lock records
+the current baseline digest. Layout is left to roadmap 3.1.1 and OpenTofu
+decoding to Nile Valley. `### Consequences`: design and context wording; the
+GitOps suite (design §12.1, roadmap 7.1.1) renders from these specifications;
+Nile Valley adoption is a Nile Valley change.
 
-Update design §1.1's fixture clause and §3.1's Nile Valley row to match the
-answer; add the specification digest to design §7.1's lock contents; link the
+Link the ADR from design §1.1's fixture clause and §3.1's Nile Valley row (both
+already name Nile Valley; add the digest-addressed artefact and the vendoring
+rule); add the specification digest to design §7.1's lock contents; link the
 ADR from design §12.1 and mark §18's fourth bullet accepted; update the
 `docs/context.md` "Nile Valley" and "Platform lock" rows so they agree with the
 ADR; add roadmap follow-ups: a sub-bullet under 3.1.1 (the platform lock task)
 recording the specification digest, and a sub-bullet under 5.1.1 ("Define
 `validation-estate.toml` in Nile Valley") recording Nile Valley's adoption of
-the specification artefact; add the `docs/contents.md` entry. Add the owner
-token from the D7 answer to the 0004 row of the identifier table. Remove the
-two 0004 xfail markers and the foundation scenario's marker. Gate and commit.
+the specification artefact; add the `docs/contents.md` entry. Remove the two
+0004 xfail markers and the foundation scenario's marker. Gate and commit.
 
 ### `EP-M6` documentation closure
 
@@ -1116,7 +1170,7 @@ Assigned: `REQ-TRACE`, `GAP-ADR-INDEX`.
 - `EP-M4`: ADR 0003 accepted; no live document claims the foreground mode is
   available. Recovery: revert the single commit (ADR and reconciling edits land
   together). Compatibility: none.
-- `EP-M5`: ADR 0004 accepted per the user's D7 answer; the foundation scenario
+- `EP-M5`: ADR 0004 accepted per D7 (Nile Valley owns); the foundation scenario
   passes. Recovery: revert. Compatibility: none.
 - `EP-M6`: indexes, developers' guide, and roadmap current; all gates green.
   Compatibility: none.
@@ -1242,6 +1296,16 @@ during execution.
   `docs/developers-guide.md` added; the release precondition moved from roadmap
   5.4.1 to 2.6.4. Remaining work and milestone order are unchanged except that
   `EP-M5` now waits for the user's D7 answer.
+- 2026-11-20: user decisions recorded. D7 resolved as option B (Nile Valley
+  owns the fixture specifications; Khufu vendors a digest-pinned revision), so
+  `EP-M5` no longer waits and ADR 0004's identifiers name `leynos/nile-valley`.
+  D3 changed from GitHub-Release direct-URL pins to PyPI publication under the
+  distribution name `khufu-cli` (trusted publishing, exact version and hash
+  pins, a hashed dependency lock on the GitHub Release), adding preconditions
+  for `femtologging` on PyPI and a registered trusted publisher; `EP-M2` now
+  renames the distribution in `pyproject.toml` and adds a roadmap 1.3.1
+  sub-bullet. Milestone order is unchanged; the configuration estimate rises by
+  one line.
 
 [^1]: <https://kind.sigs.k8s.io/docs/user/rootless/>
 [^2]: <https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases>
