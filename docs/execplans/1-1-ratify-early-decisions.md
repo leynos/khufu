@@ -6,9 +6,12 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
 `Conformance basis`, and `Verification plan` must be kept up to date as work
 proceeds.
 
-Status: DRAFT (awaiting expert review and user approval)
+Status: DRAFT (expert review applied; awaiting user approval of D3-D6 and a
+user decision on D7)
 
-Branch: `1-1-ratify-early-decisions`
+Branch: `1-1-ratify-early-decisions`, stacked on `regenerate-typos-config` (an
+unrelated regeneration of `typos.toml` by the spelling gate, kept in its own
+pull request as AGENTS.md requires).
 
 Roadmap item: `1.1` (tasks `1.1.1` to `1.1.4`) in `docs/roadmap.md`.
 
@@ -17,7 +20,7 @@ Roadmap item: `1.1` (tasks `1.1.1` to `1.1.4`) in `docs/roadmap.md`.
 Khufu is a planned command-line tool that will replace four separately
 maintained local Kubernetes preview scripts in the df12 estate (Episodic,
 Corbusier, Wildside, and Ghillie) with one shared implementation. No Khufu
-runtime code exists yet; the repository holds a design
+runtime code exists yet. The repository holds a design
 (`docs/khufu-design.md`), terms of reference (`docs/terms-of-reference.md`), a
 vocabulary (`docs/context.md`), a roadmap (`docs/roadmap.md`), and a
 placeholder Python package (`khufu/`).
@@ -26,312 +29,460 @@ The design leaves four foundational choices as "ADR candidates" in its §18. An
 architectural decision record (ADR) is a short, stable document that records
 one accepted decision, the context that forced it, the options weighed, and its
 consequences. Until those four ADRs exist and are accepted, every later roadmap
-step is built on choices that could still be reopened: where the code lives and
+step rests on choices that could still be reopened: where the code lives and
 how consumers pin it, whether a second cluster provider may ever be plugged in,
 who owns a running job, and where the typed data-service fixture specifications
-shared with Nile Valley live.
+shared with Nile Valley live. Nile Valley (`leynos/nile-valley`) is the df12
+platform repository that provisions shared cloud infrastructure with OpenTofu
+and delivers it through Flux GitOps.
 
 After this work, a maintainer or agent can open `docs/adrs/` and find four
 accepted ADRs:
 
 - `docs/adrs/adr-0001-implementation-home.md` names `leynos/khufu` as the code
-  home, `leynos/nile-valley` as the home of `validation-estate.toml` and the
-  regression matrix, and the release channel consumers pin.
+  home, Nile Valley as the home of `validation-estate.toml` (the estate
+  manifest) and the regression matrix, and the release channel consumers pin.
 - `docs/adrs/adr-0002-fixed-kind-rootless-substrate.md` fixes Linux, rootless
   Podman, kind, kubectl, and Helm as the only supported stack.
 - `docs/adrs/adr-0003-systemd-user-service-supervision.md` makes transient
   systemd user services the owners of job workers, makes waiting command-line
-  processes observers, defers the foreground mode, and lists the
-  session-survival limits that `khufu doctor` must report.
+  processes observers, defers the foreground mode to roadmap task 5.1.2, and
+  lists the session-survival limits that `khufu doctor` must report.
 - `docs/adrs/adr-0004-shared-fixture-specifications.md` names the owning
   repository of the shared fixture specifications, how each side consumes them,
   and how their versions stay aligned with the platform lock.
 
-The design, terms of reference, users' guide, developers' guide, contents
-index, and roadmap then agree with those ADRs. In particular, the design and
-users' guide stop describing a foreground execution mode as available today.
+The design, terms-of-reference open-questions register, context, users' guide,
+developers' guide, contents index, and roadmap then agree with those ADRs. In
+particular, the design and users' guide stop describing a foreground execution
+mode as available today.
 
 Observable success: `make test` runs a decision-record suite that fails if any
-ADR in `docs/adrs/` breaks the style guide's naming, heading, or status rules,
-if ADRs 0001-0004 are missing or not `Accepted`, if the design document or
-contents index fails to link one of them, or if the package metadata or source
-introduces a cluster-provider plug-in surface that ADR 0002 forbids. The suite
-passes once the ADRs and cross-references land, and each rule is shown to
+ADR in `docs/adrs/` breaks the style guide's naming, heading, status, or date
+rules; if ADRs 0001-0004 are missing, not `Accepted`, or lack the identifiers
+their roadmap success criteria require; if design §18 or `docs/contents.md`
+fails to link one of them; or if package metadata or source introduces a
+cluster-provider plug-in surface that ADR 0002 forbids. Each rule is shown to
 reject a deliberately broken input.
 
-No runtime behaviour of Khufu changes, because none exists. The externally
-visible change is documentary: the users' guide describes execution modes and
-prerequisites as ratified.
+Roadmap 1.1.4's success criterion ("Khufu's renderers and Nile Valley's GitOps
+rendering consume one specification source") is met at the decision level only:
+no renderer exists on either side yet. ADR 0004 fixes the source and the
+consumption contract, and this plan adds roadmap follow-ups that implement it.
+
+No runtime behaviour of Khufu changes, because none exists. The visible change
+is documentary: the users' guide describes execution modes and prerequisites as
+ratified.
 
 ## Constraints
 
-- No production code under `khufu/` is added or changed. This roadmap item
-  ratifies decisions; implementing supervision, `doctor`, the platform lock, or
-  fixture rendering belongs to later roadmap steps (2.1.1, 2.2.4, 3.1.1, 5.1.1,
-  5.1.2, and 7.1.1).
+- No production code under `khufu/` is added or changed. Implementing
+  supervision, `doctor`, the platform lock, or fixture rendering belongs to
+  later roadmap tasks (2.1.1, 2.1.2, 2.2.4, 3.1.1, 5.1.1, 5.1.2, 7.1.1).
 - ADR files use exactly the four paths named by roadmap 1.1. Their titles must
-  slug to those filenames, as `docs/documentation-style-guide.md`
-  ("Architectural decision records (ADRs)", "Naming convention") requires.
-- ADRs follow the style guide's required order: `## Status`, `## Date`,
-  `## Context and problem statement`, then the conditional sections used. The
-  template's conditional headings are written in sentence case, as the style
-  guide's heading rule requires.
-- ADR acceptance authority: the user's approval of this plan ratifies the
-  decision directions recorded in `Decision log` entries D3 to D7. ADRs are
-  committed with `Accepted` status, the commit date, and a one-sentence
-  summary. If review rejects a direction, revert the ADR commit rather than
-  silently editing an accepted record.
-- Requirement precedence follows `docs/khufu-design.md` front matter: the
-  terms of reference settle problem and scope; accepted ADRs override the
-  design. Any ADR that changes a terms-of-reference scope statement must update
-  that statement in the same commit.
-- Do not modify `.github/workflows/release.yml`, repository settings (such as
-  GitHub immutable releases), or any repository other than `leynos/khufu`.
-  Release-workflow and Nile Valley changes are recorded as consequences and
-  follow-up roadmap work, not performed here.
-- Do not create `docs/repository-layout.md`; its absence is a pre-existing gap
-  outside this item. Record it in `Surprises & discoveries` only.
-- Test helpers live under `tests/`; AGENTS.md forbids tests inside package
-  modules. No code file exceeds 400 lines.
-- Authorized dependency changes: add `pytest-bdd` and `hypothesis` to the
-  `dev` dependency group in `pyproject.toml` and refresh `uv.lock` with
-  `uv lock`. No runtime dependency is added. `syrupy` is not added (see D8).
-- Comments and documentation use en-GB-oxendict spelling and follow
-  `docs/documentation-style-guide.md`.
+  slug to those filenames (`docs/documentation-style-guide.md`, "Architectural
+  decision records (ADRs)", "Naming convention"). Sentence case makes ADR
+  0003's title "Systemd user service supervision"; that capitalization is
+  accepted.
+- ADRs follow the style guide's required order (`## Status`, `## Date`,
+  `## Context and problem statement`) and use these conditional headings, in
+  this order, in sentence case: `## Decision drivers`, `## Options considered`
+  (with `### Option A: <name>` subsections and a captioned comparison table),
+  `## Decision outcome` (with a `### Consequences` subsection),
+  `## Goals and non-goals` where useful, and `## Known risks and limitations`.
+  See D1.
+- ADR prose follows the style guide: no first-person pronouns, en-GB-oxendict
+  spelling, expanded acronyms on first use, captions on every table, a
+  screen-reader description before any diagram, external sources as numbered
+  footnotes, and roadmap tasks cited by number and short description, because
+  `mapsplice` may renumber them.
+- Acceptance authority (D2): approval of this plan ratifies decisions D3-D6;
+  D7 requires a separate, explicit user answer before `EP-M5` starts. Each
+  ADR's Status date is the date of the corresponding user approval. Editing ADR
+  text before the implementation pull request merges is normal review. After
+  merge, changes follow the style guide's amendment and supersession rules.
+- The terms of reference take precedence over the design and are edited only
+  in the §9 open-questions register (resolution paths). Their needs statements
+  (§4.2, §4.3 table, table 3) stay unchanged; see D9.
+- Do not change `.github/workflows/release.yml`, repository settings (for
+  example, GitHub immutable releases or tag rulesets), or any other repository.
+  ADRs record those changes as consequences, and the roadmap gains follow-up
+  tasks.
+- Do not create `docs/repository-layout.md`. Its absence is a pre-existing gap
+  outside this item.
+- Test modules live under `tests/` (AGENTS.md). No code file exceeds 400
+  lines. Python follows `.rules/python-*.md` and the repository's Ruff
+  configuration, including the banned `from` imports in `pyproject.toml` (use
+  `import dataclasses as dc`, `import enum`, `import collections.abc as cabc`,
+  and similar module imports).
+- Authorized configuration changes, all in `pyproject.toml`: add `pytest-bdd`
+  and `hypothesis` to the `dev` dependency group with exact pins; add `"docs/"`
+  to `[tool.mutmut] also_copy`; add `pythonpath = ["."]` to
+  `[tool.pytest.ini_options]`; add pytest-bdd step decorators and
+  `@pytest.fixture` to a Vulture `ignore_decorators` list. Refresh `uv.lock`
+  with `uv lock`. No runtime dependency is added. `syrupy` is not added (D8).
 - Implementation begins only after the user approves this plan.
 
 ## Tolerances (exception triggers)
 
-Comparison base: `4ab9802` (the `main` commit this branch was cut from).
-Counting command, run from the repository root:
+Comparison base: the commit that records the user's approval of this plan
+(record its SHA in `Progress` as `APPROVED_PLAN_SHA`). Counting command, from
+the repository root:
 
 ```bash
-git diff --numstat 4ab9802 -- . ':(exclude)docs/execplans/' ':(exclude)uv.lock'
+git diff --numstat "$APPROVED_PLAN_SHA" -- . ':(exclude)docs/execplans/' ':(exclude)uv.lock'
 ```
 
-Classification is by whole file: Markdown under `docs/` (other than
-`docs/execplans/`) is documentation; `pyproject.toml` is configuration;
-`tests/**` (Python and `.feature` files) is code. `uv.lock` is a generated
-lockfile and is excluded from line counts but counted as a file. This ExecPlan
-is excluded from every count.
+Classification is by whole file. Markdown under `docs/` (excluding
+`docs/execplans/`) is documentation. `pyproject.toml` is configuration.
+Everything under `tests/`, including `.feature` files, is code. `uv.lock` is a
+generated lockfile, excluded from line counts and counted as a file. This
+ExecPlan is excluded from every count.
 
-- Files: stop and escalate if more than 18 non-ExecPlan files change.
-  Expected: 4 new ADRs, 6 edited docs (`khufu-design.md`,
-  `terms-of-reference.md`, `users-guide.md`, `developers-guide.md`,
-  `contents.md`, `roadmap.md`), about 5 test files, `pyproject.toml`, and
-  `uv.lock`, totalling 17.
-- Code: stop and escalate above 650 net added lines under `tests/`. Estimate:
-  about 200 lines of pure rules, 60 of filesystem loading, 250 of tests, and 40
-  of Gherkin, totalling 550.
-- Configuration: stop and escalate above 20 net lines in `pyproject.toml`.
-  Estimate: 3.
-- Documentation: stop and escalate above 1,200 net lines. Estimate: four ADRs
-  at roughly 170 to 230 lines each (about 800), plus about 180 lines of edits
-  across the six existing documents.
+- Files: stop and escalate if more than 19 non-ExecPlan files change. Expected
+  18: 4 new ADRs; 7 edited documents (`khufu-design.md`,
+  `terms-of-reference.md`, `context.md`, `users-guide.md`,
+  `developers-guide.md`, `contents.md`, `roadmap.md`); 4 test modules, 1
+  feature file, and an optional `tests/conftest.py`; `pyproject.toml` and
+  `uv.lock`.
+- Code: stop above 550 net added lines under `tests/`. Estimate 420: rules
+  module 150, rule tests 120, repository tests 70, BDD binding and feature 80.
+- Configuration: stop above 20 net lines in `pyproject.toml`. Estimate 7.
+- Documentation: stop above 1,300 net lines. Estimate 1,050: four ADRs at
+  about 180-240 lines each (about 850) and about 200 lines of edits across the
+  seven existing documents.
 - Interface: stop if any change to `khufu/`, the Makefile, or CI workflows
   appears necessary.
 - Dependencies: stop if any dependency beyond `pytest-bdd` and `hypothesis`
-  appears necessary, or if either cannot be installed on CPython 3.14 with the
-  locked toolchain.
-- Architecture: stop if an ADR's direction must depart from the recorded
-  Decision log entries, or if a decision would contradict the terms of
-  reference beyond the specific statements named in this plan.
-- Iterations: stop if a gate still fails after 3 fix attempts for the same
-  cause.
+  appears necessary, or if `make audit` reports an advisory against either or
+  their transitive dependencies (`mako`, `parse`, `parse-type`,
+  `gherkin-official`).
+- Architecture: stop if an ADR's direction must depart from the approved
+  Decision log entries, or if the user's D7 answer requires a
+  terms-of-reference scope change.
+- Iterations: stop if a gate still fails after 3 fix attempts for one cause.
 - Time: stop if any milestone exceeds 4 hours of active work.
-- Ambiguity: stop and present options if Nile Valley maintainers or the user
-  contradict the ownership direction in D7.
+- Ambiguity: stop and present options if the D7 answer leaves the consumption
+  mechanism or alignment rule open.
 
 Budget evidence: this repository has no earlier ExecPlans (`docs/execplans/` is
-created by this plan), so no historical budget revisions exist. The estimates
-come from the survey in `Context and orientation`: the style guide's ADR
-template has eleven sections, and the four decisions touch roughly 20 passages
-across six documents.
+created by this plan), so no historical budget revisions exist. Expert review
+cut the first draft's code estimate from 550 to 420 lines by removing a
+filesystem-adapter module, two Hypothesis properties, and a speculative
+`Superseded` rule. The documentation estimate grew because review found
+contradicting passages in `docs/context.md` and `docs/developers-guide.md`.
 
 ## Risks
 
-- Risk: the foreground-mode deferral contradicts the terms of reference
-  (§4.2 says CI "needs a foreground mode"), the design (§11.3), and the users'
-  guide ("Execution modes"). Severity: medium. Likelihood: high (the conflict
-  exists today). Mitigation: ADR 0003 records the deferral to roadmap 5.1.2,
-  and milestone `EP-M4` edits every conflicting passage in the same commit. CI
-  needs before 5.1.2 are met by runners with a lingering user manager.
-- Risk: the shared-fixture ownership direction (D7) moves specification
-  ownership away from the wording in design §1.1 and §3.1, and Nile Valley's
-  maintainers may disagree. Severity: high. Likelihood: medium. Mitigation: D7
-  is surfaced for explicit user approval before implementation; Nile Valley
-  keeps rendering, cloud-only extensions, and the estate manifest; the ADR
-  states the Nile Valley-side consumption contract without editing Nile Valley.
-- Risk: the release-channel decision (D3) depends on GitHub immutable
-  releases, which are disabled on `leynos/khufu` today, and the current
-  `release.yml` uploads assets after publication with `--clobber`, which an
-  immutable release forbids. Severity: medium. Likelihood: high. Mitigation:
-  ADR 0001 makes "immutable publication" a precondition of the first release
-  tag and adds a follow-up task to the roadmap; no tag is pushed by this work.
+- Risk: the D7 decision (fixture-specification ownership) is contested between
+  Khufu and Nile Valley. Severity: high. Likelihood: medium. Mitigation: D7 is
+  presented neutrally with a recommendation and gates `EP-M5` only; `EP-M1` to
+  `EP-M4` proceed without it.
+- Risk: the foreground-mode deferral leaves CI hosts without a usable user
+  manager unable to run jobs until roadmap 5.1.2. Severity: medium. Likelihood:
+  high. Mitigation: ADR 0003 states this limit, `doctor` reports it, and the
+  users' guide says so; early slices run on developer hosts.
+- Risk: the release channel (D3) depends on GitHub immutable releases and a
+  tag ruleset, both absent today, while `.github/workflows/release.yml` already
+  publishes on any pushed `v*.*.*` tag and uploads assets after publication with
+  `--clobber`. Severity: medium. Likelihood: high. Mitigation: ADR 0001 makes
+  immutable, atomic publication a precondition of the first tag; a roadmap
+  follow-up is attached to the first task that needs a pinned release; this
+  work pushes no tag.
 - Risk: documentation-conformance tests become brittle prose checks.
-  Severity: medium. Likelihood: medium. Mitigation: tests assert structure
-  (filenames, headings, status grammar, links) and a small, finite set of named
-  tokens tied to roadmap success criteria, never whole sentences.
-- Risk: `pytest-bdd` 9 and `hypothesis` interact poorly with `pytest-xdist`
-  (`-n auto`) or the 30-second `pytest-timeout`. Severity: low. Likelihood:
-  low. Mitigation: `EP-M1` runs `make test` with the new suites before any ADR
-  work; property tests use default example counts.
-- Risk: the mutation-testing workflow copies only `scripts/`, `.github/`,
-  `Makefile`, and `pyproject.toml` (`[tool.mutmut] also_copy`), so tests that
-  read `docs/` would fail under mutmut. Severity: low. Likelihood: high.
-  Mitigation: add `docs/` to `also_copy` in `EP-M1`.
+  Severity: medium. Likelihood: medium. Mitigation: tests assert structure and
+  a small set of stable identifiers (repository names, file names, option
+  names, digest vocabulary) within one named section, never sentences or
+  roadmap numbers.
+- Risk: `pytest-bdd` or `hypothesis` interacts badly with `pytest-xdist`
+  (`-n auto`), the 30-second `pytest-timeout`, Vulture, or the duplication
+  gate. Severity: low. Likelihood: medium. Mitigation: `EP-M1` runs every gate
+  before any ADR work; steps reuse the rule functions and one shared text
+  builder.
+- Risk: GitHub release downloads are unavailable or blocked by egress rules
+  (`release-assets.githubusercontent.com`). Severity: medium. Likelihood: low.
+  Mitigation: ADR 0001 records integrity, not availability, as the guarantee
+  and leaves mirroring or caching to the estate.
 
 ## Progress
 
 - [x] (2026-11-20 10:40Z) Branch renamed to `1-1-ratify-early-decisions`;
   Lody session titled.
-- [x] (2026-11-20 11:30Z) Reconnaissance: repository docs, Makefile, tests,
-  style guide, Nile Valley tree, PyPI name, GitHub release settings, kind and
-  systemd documentation.
-- [x] (2026-11-20 12:30Z) Initial draft written.
-- [ ] Expert review applied.
-- [ ] Plan approved by the user.
-- [ ] `EP-M1` decision-record suite and substrate fitness rules, red.
+- [x] (2026-11-20 11:30Z) Reconnaissance: repository documents, Makefile,
+  tests, style guide, Nile Valley tree, Python Package Index (PyPI) names,
+  GitHub release settings, kind and systemd documentation.
+- [x] (2026-11-20 12:30Z) Initial draft written and committed.
+- [x] (2026-11-20 12:50Z) Spelling gate regenerated `typos.toml`; committed on
+  `regenerate-typos-config` and stacked this branch on it.
+- [x] (2026-11-20 13:40Z) Expert review (release engineering, systemd and
+  rootless containers, Python test architecture, documentation governance)
+  applied; see the revision note.
+- [ ] Plan approved by the user (D3-D6); record `APPROVED_PLAN_SHA`.
+- [ ] `EP-M1` decision-record suite and substrate fitness rules.
 - [ ] `EP-M2` ADR 0001 accepted and cross-referenced.
-- [ ] `EP-M3` ADR 0002 accepted; fitness rules green.
+- [ ] `EP-M3` ADR 0002 accepted and cross-referenced.
 - [ ] `EP-M4` ADR 0003 accepted; foreground and session text reconciled.
+- [ ] User answer on D7 recorded.
 - [ ] `EP-M5` ADR 0004 accepted and cross-referenced.
 - [ ] `EP-M6` documentation closure, roadmap 1.1 marked done, full gates.
 
 ## Surprises & discoveries
 
-- Observation: the name `khufu` on the Python Package Index (PyPI) belongs to
-  an unrelated project ("Twitter Bootstrap elements via Python", version
-  1.3.3). Evidence: `curl -s https://pypi.org/pypi/khufu/json` during planning.
-  Impact: consumers must never resolve Khufu by bare name from a package index;
-  installing `khufu` without an explicit source would fetch the wrong package.
-  This drives D3.
+- Observation: the name `khufu` on PyPI belongs to an unrelated project
+  ("Twitter Bootstrap elements via Python", versions 1.2.0-1.3.3). Evidence:
+  `curl -s https://pypi.org/pypi/khufu/json`. Impact: `pip install khufu`,
+  `uv tool install khufu`, and `uvx khufu` fetch the wrong package, and an exact
+  `khufu==1.3.x` pin against an index would match that project once Khufu
+  reaches 1.x. This drives D3.
+- Observation: `femtologging` is not on PyPI; `espressoTUI` is, published by
+  its upstream (`kimusan/espresso`), but its import name `espresso` collides
+  with an unrelated PyPI distribution named `espresso`. Evidence: PyPI JSON
+  API. Impact: Khufu's dependency set needs direct-URL, hash-pinned resolution
+  (already required by roadmap 1.3.1), and PyPI rejects uploads whose metadata
+  contains direct-URL dependencies, so PyPI cannot be Khufu's channel while it
+  depends on femtologging that way.
 - Observation: GitHub immutable releases are disabled for `leynos/khufu`, no
-  release exists, and `.github/workflows/release.yml` creates the release first
-  and then uploads the wheel with `gh release upload --clobber`. Evidence:
+  tag rulesets exist, and no release has been published. Evidence:
   `gh api repos/leynos/khufu/immutable-releases` returned
-  `{"enabled":false,...}`; `gh release list` was empty. Impact: an immutable
-  release forbids adding assets after publication, so the workflow must change
-  before the first tag (follow-up, not this item).
-- Observation: Nile Valley renders the shared data services today with
-  OpenTofu modules (`infra/modules/cnpg/manifests.tf` emits
-  `postgresql.cnpg.io/v1` `Cluster`; `infra/modules/valkey/manifests.tf` emits
-  `hyperspike.io/v1` `Valkey`) wrapped in Flux `HelmRelease` objects, driven by
-  `scripts/render_platform_manifests.py`. It contains no
+  `{"enabled":false,"enforced_by_owner":false}`;
+  `gh api repos/leynos/khufu/rulesets` returned `[]`; `gh release list` was
+  empty. Impact: the release workflow must change before the first tag.
+- Observation: Nile Valley renders the shared data services with OpenTofu
+  modules (`infra/modules/cnpg/manifests.tf` emits `postgresql.cnpg.io/v1`
+  `Cluster`; `infra/modules/valkey/manifests.tf` emits `hyperspike.io/v1`
+  `Valkey`) inside Flux `HelmRelease` objects. It pins its own operator chart
+  versions (`chart_version` default `0.26.1` in
+  `infra/modules/cnpg/variables-core.tf`) and production defaults (three
+  instances, block storage, 50Gi in `variables-cluster.tf`). It has no
   `validation-estate.toml` and no mention of Khufu. Evidence:
   `gh api repos/leynos/nile-valley/git/trees/HEAD?recursive=1` and file reads
   at the default branch on 2026-11-20. Impact: shared specifications must be
-  consumable from both Python and OpenTofu's HashiCorp Configuration Language
-  (HCL), so they must be language-neutral data (JSON), which OpenTofu reads with
-  `jsondecode(file(...))`.
+  language-neutral data, and ownership determines whether production platform
+  upgrades depend on Khufu releases; see D7.
+- Observation: rootless Podman on the planning host uses the `systemd` cgroup
+  manager, so kind node containers run in `libpod-*.scope` units under
+  `user@.service`, not in the worker's cgroup. Evidence: `podman info` on the
+  planning host (reported by the systemd reviewer). Impact: logout without
+  lingering, or a reboot, stops environment clusters as well as jobs; ADR 0003
+  says so, and `doctor` must report the cgroup manager.
 - Observation: `docs/repository-layout.md`, which AGENTS.md and the style
   guide treat as canonical, does not exist, and `docs/contents.md` indexes no
-  ADRs although the terms of reference say ADRs are indexed there. Impact:
-  `EP-M6` adds an ADR group to `docs/contents.md`; the missing layout document
-  is left for separate work.
-- Observation: the "source design" referred to by roadmap 1.1.1 is "Khufu
-  local validation design, revision 2, 15 October 2026, supplied by the estate
-  owner" (`docs/terms-of-reference.md` references). It is not in any
-  repository. Impact: ADR 0001 cites it by that description.
+  ADRs although the terms of reference say ADRs are indexed there. Impact: each
+  ADR milestone adds its own contents entry; the layout document is left for
+  separate work.
+- Observation: the "source design" cited by roadmap 1.1.1 is "Khufu local
+  validation design, revision 2, 15 October 2026, supplied by the estate owner"
+  (`docs/terms-of-reference.md`, references). It is not in any repository.
+  Impact: ADR 0001 cites it by that description.
 - Observation: `make all` and CI do not run `make nixie`. Impact: this plan
-  runs `make nixie` explicitly because ADRs may carry Mermaid diagrams.
+  runs it explicitly.
+- Observation: running `make markdownlint` regenerated `typos.toml` from the
+  shared dictionary (new tokio-attribute ignore patterns), a change unrelated
+  to this work. Impact: committed on `regenerate-typos-config`, which this
+  branch is stacked on.
 
 ## Decision log
 
-- D1. Decision: write the ADRs from the style guide's template, adding a
-  `### Consequences` subsection under `## Decision outcome` because the style
-  guide's document-type guidance requires ADRs to be "explicit about context,
-  decision, consequences, and status", while its template omits a consequences
-  heading. Omit `## Migration plan` where no phased change exists and
-  `## Outstanding decisions` because every ADR is `Accepted`; matters delegated
-  to later roadmap tasks appear in `## Known risks and limitations` with
-  roadmap task numbers. Rationale: keeps the required order and satisfies
-  roadmap 1.1.1's explicit request for consequences. Date/Author: 2026-11-20,
-  planning agent.
-- D2. Decision: the user's approval of this plan is the acceptance authority
-  for the four ADRs (see `Constraints`). Rationale: the terms of reference name
-  the estate owner as owner of the implementation-home question, and the user
-  is that owner for this repository. Date/Author: 2026-11-20, planning agent.
+- D1. Decision: write ADRs from the style guide template with sentence-case
+  headings, using `## Decision outcome` (the template's "/ proposed direction"
+  applies to `Proposed` ADRs) and adding `### Consequences` under it, because
+  the style guide's document-type guidance requires ADRs to be "explicit about
+  context, decision, consequences, and status" while the template has no
+  consequences heading. Omit `## Migration plan` and `## Outstanding decisions`
+  (every ADR is `Accepted`); matters delegated to later roadmap tasks go in
+  `## Known risks and limitations`. Rationale: required order and roadmap
+  1.1.1's explicit request for consequences are both satisfied. Date/Author:
+  2026-11-20, planning agent; revised after governance review.
+- D2. Decision: approval of this plan ratifies D3-D6; D7 is ratified only by
+  an explicit user answer before `EP-M5`. ADRs are committed as `Accepted` with
+  the date of the relevant approval; text may change in pull-request review
+  before merge. Rationale: plan approval approves directions, so each direction
+  needs an identifiable approval; the earlier draft bundled D7 into plan
+  approval, which review rejected. Date/Author: 2026-11-20, planning agent.
 - D3. Decision (ADR 0001, release channel): Khufu releases are GitHub Releases
-  of `leynos/khufu`, created from immutable `vX.Y.Z` tags, carrying the pure
-  Python wheel as a release asset. Consumers and the estate manifest pin an
-  exact version together with the wheel's URL and SHA-256 digest; nothing
-  resolves `khufu` by name from PyPI or any other index. GitHub immutable
-  releases must be enabled, and the release workflow must publish assets
-  atomically (draft, upload, then publish), before the first tag is pushed.
-  Rationale: the repository already builds a pure wheel on tag push; the PyPI
-  name is owned by an unrelated project, so name-based resolution is a
-  dependency-confusion hazard; design §4.3 requires exact pins and forbids
-  discovering moving versions; immutable releases guarantee a pinned URL and
-  digest cannot change underneath a consumer. Rejected: PyPI under a new
-  distribution name (adds an external publisher and namespace to govern for no
-  estate benefit, and leaves the import-name collision); Git URL pins of source
-  (`git+https`) (rebuilds on every install and pins a commit rather than a
-  qualified artefact). Date/Author: 2026-11-20, planning agent.
-- D4. Decision (ADR 0002): the substrate decision is enforced by fitness
-  rules now, not only by review: the package metadata declares no
-  `[project.entry-points]` groups, Khufu source never calls
-  `importlib.metadata.entry_points`, and Khufu source never defines a
-  `--provider` or `--engine` option literal.
-  `KIND_EXPERIMENTAL_PROVIDER=podman` is an internal environment setting of the
-  single kind adapter, not a provider option, and the ADR says so. Rationale:
-  the fitness rules are cheap, precise, and fail at the moment someone
-  introduces the forbidden extension surface; broader string scans for "docker"
-  or "k3d" would flag legitimate remediation text and are rejected.
-  Date/Author: 2026-11-20, planning agent.
-- D5. Decision (ADR 0003, foreground mode): the foreground execution mode is
-  deferred to roadmap task 5.1.2, not abandoned. Until 5.1.2 ships, a host
-  without a usable systemd user manager cannot run mutating jobs: `doctor`
-  reports the missing prerequisite, and job submission refuses with exit code
-  `3` (host prerequisite failure). The contract that 5.1.2 must honour (record
-  foreground execution, never claim detached durability, mark the job
-  interrupted when the process is lost) is recorded now. Rationale: roadmap
-  1.1.3 states the deferral and 5.1.2 schedules the mode; the earlier slices
-  run on developer hosts with a user manager; deferring avoids building a
-  second execution path before the detached path is proven. Date/Author:
-  2026-11-20, planning agent.
-- D6. Decision (ADR 0003, scope): ADR 0003 also ratifies the SQLite ledger
-  under `$XDG_STATE_HOME/khufu` as the durable source of truth that supervision
-  reconciles against, because design §18 bundles it into this candidate and the
-  commit-before-start rule cannot be stated without it. The ledger schema
-  remains roadmap task 2.2.1. Rationale: leaving the ledger unratified would
-  leave §18 half-resolved. Date/Author: 2026-11-20, planning agent.
-- D7. Decision (ADR 0004, recommended direction, requires explicit user
-  approval): Khufu owns the source of the shared typed fixture specifications
-  for the data services it provisions (initially CloudNativePG PostgreSQL
-  clusters and Hyperspike Valkey), as JSON Schema documents plus versioned JSON
-  specification documents under `khufu/platform/`, released in lockstep with
-  the platform lock. Each Khufu release publishes the same files as a
-  standalone release asset whose SHA-256 digest is recorded in
-  `platform.lock.toml`. Nile Valley consumes that asset from the Khufu release
-  pinned in `validation-estate.toml` and its OpenTofu modules decode it with
-  `jsondecode`; Nile Valley keeps ownership of its rendering, its cloud-only
-  extensions (backups, high availability, Transport Layer Security (TLS)), and
-  the estate manifest. Alignment is by construction: one Khufu release carries
-  one lock and one specification set, and Nile Valley CI verifies that the
-  digest of the specifications it renders from equals the digest in the pinned
-  release's lock. Rationale: the specifications are only valid against the
-  custom resource definition (CRD) schemas and operator versions that the
-  platform lock owns (design §7.1), so a second owner would create a second
-  version axis, which is the drift Khufu exists to remove. Rejected
-  alternatives: Nile Valley owns the specifications and Khufu vendors a pinned
-  revision (two version axes that must be reconciled on every lock change); a
-  third repository (a third release cadence and pin with no owner benefit).
-  Consequence: design §1.1 and §3.1 wording that Nile Valley "keeps" the
-  specifications changes; terms-of-reference ownership statements remain true
-  because Nile Valley keeps rendering. Date/Author: 2026-11-20, planning agent;
-  pending expert review and user approval.
+  of `leynos/khufu`, created from immutable `vX.Y.Z` tags. Each release carries
+  the pure Python wheel, a hash-pinned lock of the full runtime dependency set
+  (the PEP 751 `pylock.toml` format, or a requirements file with `--hash`
+  entries), and a `SHA256SUMS` file. Consumers and the estate manifest pin a
+  release by version, tag, commit SHA, wheel URL and SHA-256, and
+  dependency-lock URL and SHA-256; installs use hash checking
+  (`--require-hashes` or the equivalent `uv` lock). Nothing resolves `khufu` by
+  name from PyPI or any index; the ADR names the unsafe commands
+  (`pip install khufu`, `uv tool install khufu`, `uvx khufu`) and the safe forms
+  (`uvx --from 'khufu @ <wheel URL>#sha256=<digest>' khufu`, or a
+  `[tool.uv.sources]` URL entry whose `uv.lock` records the hash). A release
+  candidate is a PEP 440 pre-release (`X.Y.ZrcN`) published the same way, or a
+  local build selected by explicit path; either identity is recorded in the
+  report (design §4.3). Preconditions before the first tag: GitHub immutable
+  releases enabled; a tag ruleset restricting `refs/tags/v*` to release
+  maintainers; the workflow refusing tags that do not match
+  `^v\d+\.\d+\.\d+(rc\d+)?$` or do not equal `project.version`; publication as
+  draft, upload, then publish; `gh release verify` after publication.
+  Rationale: the repository already builds a pure wheel on tag push; PyPI name
+  resolution fetches an unrelated project; PyPI rejects packages with
+  direct-URL dependencies, which femtologging requires; design §4.3 demands
+  exact pins and forbids per-consumer resolution of unrelated dependency sets;
+  immutable releases make a pinned URL's content unchangeable (integrity, not
+  availability: a release can still be deleted). Rejected: PyPI under a new
+  distribution name (blocked by direct-URL dependencies and adds a second
+  namespace to govern); Git source pins (`git+https`) (rebuild on every install
+  and pin a commit rather than a qualified artefact). Date/Author: 2026-11-20,
+  planning agent; revised after release-engineering review.
+- D4. Decision (ADR 0002, enforcement): add fitness rules now that fail when
+  someone introduces a provider-extension surface: any `[project.entry-points]`
+  group in `pyproject.toml` (console scripts belong in `[project.scripts]`,
+  which is allowed, with a negative control); any import of, or attribute
+  access to, `entry_points` from `importlib.metadata`, or any import of
+  `pluggy`, `stevedore`, or `pkg_resources`, under `khufu/`; any function
+  parameter named `provider`, `engine`, or `backend`, or any string literal
+  `--provider` or `--engine`, under `khufu/`. Cyclopts derives `--provider`
+  from a parameter named `provider`, so the parameter rule is the one that
+  matters. Detection uses the `ast` module, so comments and prose do not trip
+  it. `KIND_EXPERIMENTAL_PROVIDER=podman` is internal configuration of the
+  single kind adapter, not a provider option, and the ADR says so. Once the
+  command surface exists, roadmap 1.4 extends the check to walk the generated
+  command descriptors and the profile schema (environment-variable and
+  configuration spellings). Rationale: these rules are cheap, exact, and fail
+  when the forbidden surface appears; broader scans for "docker" or "k3d" would
+  flag legitimate remediation text. Rejected: deferring all enforcement to
+  roadmap 1.3.2 (the import-boundary check there governs layering, not
+  extension surfaces). Date/Author: 2026-11-20, planning agent; revised after
+  systemd and test-architecture review.
+- D5. Decision (ADR 0003, supervision invariants): each long operation runs as
+  a transient service of the user's systemd manager (`systemd-run --user`,
+  service type `exec`, `--collect`), never as a `--scope`, and never with
+  `--pty`, `--pipe`, or `--wait`. The unit name is
+  `khufu-job-<job-id>-a<attempt>.service`, with job identifiers restricted to
+  `[a-z0-9-]` so no unit-name escaping is needed, which keeps names under 255
+  characters. Unit identity is the unit's `InvocationID`, which the worker
+  writes to the ledger at start. An `ExecStopPost=` finalizer writes
+  `$SERVICE_RESULT` and `$EXIT_STATUS` to the ledger. Recovery reads
+  `LoadState`, `ActiveState`, `Result`, and `InvocationID`;
+  `LoadState=not-found` means "no live worker", and the outcome then comes from
+  ledger records only. The worker's environment is passed explicitly
+  (`--setenv`), because a transient service does not inherit the caller's
+  environment. Every worker subprocess stays in the worker unit's control group
+  (cgroup), except cluster containers, which deliberately live in Podman's own
+  scopes; a nested `--scope` is forbidden unless bound to the worker unit. The
+  exact flags are implemented and tested by roadmap 2.2.4; whether the worker
+  unit needs `Delegate=yes` for kind is checked empirically by roadmap 2.1.2.
+  Rationale: `--collect` unloads successful units immediately, so
+  reconciliation by a fixed name cannot distinguish "never started" from
+  "succeeded"; attempt suffixes avoid collisions with failed units on
+  `jobs resume`; a `--scope` makes the invoking CLI the worker, so it receives
+  the caller's terminal hang-up and interrupts and records no main-process
+  result, breaking the observer rule. Rejected: a Khufu-owned daemon (a second
+  supervisor to keep alive); `nohup` or double-fork (no supervision, no
+  recorded result); foreground-only execution (couples work to the observer).
+  Date/Author: 2026-11-20, planning agent; revised after systemd review.
+- D6. Decision (ADR 0003, foreground mode and session limits): the foreground
+  execution mode is deferred to roadmap task 5.1.2 ("Implement foreground
+  execution for hosts without a usable systemd user session"), not abandoned.
+  The contract 5.1.2 must honour is recorded now: record foreground execution
+  in the job and report, never claim detached durability, and mark the job
+  interrupted when the process is lost. Until then, mutating submissions check
+  for a usable user manager before committing a job and refuse with exit code
+  `3` (host prerequisite failure), leaving no queued job; read-only commands
+  are never refused. A start failure after commit marks the job `failed` (exit
+  `7`); a `--wait` observer whose unit is lost at logout exits `10`. Missing
+  lingering is a `doctor` warning, not a refusal. `doctor` reports, and never
+  repairs: whether a user manager is running, separately from whether the
+  invoking environment can reach it (`XDG_RUNTIME_DIR` and the user bus are
+  often absent under `sudo`, cron, non-PAM SSH sessions, containers, and CI
+  agents even when a lingering manager runs); lingering, read from
+  `/var/lib/systemd/linger/<user>` without D-Bus or
+  `loginctl show-user --property=Linger` with it; the effective
+  `UserStopDelaySec=` (without lingering, `user@.service` stops that long after
+  the last session ends, default 10 seconds, stopping jobs and, through
+  Podman's scopes, environment clusters; `infinity` keeps the manager after
+  first login but does not start it at boot); that no transient unit or kind
+  node survives a reboot, so recovery marks jobs interrupted and reconciles
+  environments as stopped; the controllers delegated to `user@.service`;
+  Podman's cgroup manager (must be `systemd`); and, informationally, whether
+  `systemd-oomd` manages the user slice. `systemctl --user is-system-running`
+  returning `degraded` (some unit failed) does not make the manager unusable.
+  `KillUserProcesses=` governs session scopes, not services under the user
+  manager (its compiled default is `yes` upstream and `no` on the planning
+  host); it only ends a waiting observer at logout, which is harmless. The
+  SQLite ledger under `$XDG_STATE_HOME/khufu` is a premise stated in ADR 0003's
+  context (design §11.1 and roadmap 2.2.1 already settle it), not a separate
+  decision. Rationale: roadmap 1.1.3 states the deferral and 5.1.2 schedules
+  the mode; roadmap 5.1.3 (the regression matrix) already requires 5.1.2, so no
+  matrix runner needs a workaround. Date/Author: 2026-11-20, planning agent;
+  revised after systemd and governance review.
+- D7. Decision required before `EP-M5` (ADR 0004, fixture-specification
+  ownership). The question for the user: which repository owns the source of
+  the typed fixture specifications for shared data services (initially
+  CloudNativePG (CNPG) PostgreSQL clusters and Hyperspike Valkey)?
+
+  Option A (Khufu owns): specifications ship in each Khufu release beside the
+  platform lock; Nile Valley vendors them from the Khufu release pinned in
+  `validation-estate.toml`. Strength: one release carries lock and
+  specifications. Cost: Nile Valley's production GitOps rendering depends on
+  releases of a local-validation tool, and Nile Valley's own operator pins
+  (`chart_version` 0.26.1 for CNPG) either stay separate, which breaks
+  alignment, or follow Khufu, which makes every production platform upgrade
+  wait for a Khufu release.
+
+  Option B (Nile Valley owns, recommended): Nile Valley owns the specifications
+  and the production operator pins as the estate baseline, and publishes them
+  as a digest-addressed, language-neutral JSON artefact (one canonical JSON
+  bundle, or a sorted manifest of per-file SHA-256 digests, so the digest is
+  reproducible). Khufu vendors a pinned revision into its release, records the
+  upstream revision and digest in `platform.lock.toml`, and qualifies it
+  locally. Nile Valley's renderers read the same artefact from its own tree,
+  and the regression matrix in Nile Valley CI checks that the approved Khufu
+  release's lock records the current baseline digest. Strength: one version
+  axis owned by the estate owner, no dependency from production onto Khufu, and
+  agreement with design §1.1, terms of reference §2 ("Nile Valley owns …
+  rendered platform fixtures"), and the estate owner's stated need for "one
+  platform baseline". Cost: a Khufu lock change that needs a new specification
+  requires a Nile Valley change first.
+
+  Option C (a third repository): a separate cadence, pin, and owner with no
+  benefit over B.
+
+  Either way, ADR 0004 decides the owner, the artefact identity
+  (digest-addressed JSON), each side's consumption contract, and the alignment
+  rule. It does not prescribe file layout (left to roadmap 3.1.1) or how Nile
+  Valley's OpenTofu decodes the data (left to Nile Valley; OpenTofu's `file()`
+  reads only local files and cannot validate JSON Schema, so Nile Valley CI
+  validates and its tree holds the artefact). Date/Author: 2026-11-20, planning
+  agent; reversed from the draft's option A after release-engineering review;
+  awaiting the user's answer.
 - D8. Decision (verification shape): validate this documentary change with a
-  decision-record suite under `tests/`: pure rules over in-memory ADR text in
-  `tests/decision_records.py` (the domain), a thin filesystem loader (the
-  adapter), unit tests and Hypothesis properties for the rules, a `pytest-bdd`
-  feature for roadmap acceptance, and fitness rules for ADR 0002. Do not add
-  `syrupy`: no multivariant output format exists. Do not add end-to-end tests:
-  no command-line behaviour, persistence, or network boundary changes.
-  Rationale: the roadmap success criteria are structural and checkable; the
-  user requires pytest, pytest-bdd, and Hypothesis "where applicable", and
-  later roadmap steps (1.2, 1.4, 2.2) need both libraries anyway. Date/Author:
+  small decision-record suite: pure rule functions in
+  `tests/decision_records.py`; parameterized truth-table tests and two
+  Hypothesis properties; repository tests over the real `docs/` tree; one
+  `pytest-bdd` feature whose positive scenario is a thin wrapper over the same
+  rules; and the D4 fitness rules. Do not add `syrupy`: there is no
+  multivariant output format. Do not add end-to-end tests: no command-line
+  behaviour, persistence, or network boundary changes. Rationale: the user's
+  instructions require pytest, `pytest-bdd`, and Hypothesis "where applicable",
+  and roadmap 1.1's success criteria are structural and checkable. The
+  governance reviewer recommended deferring both libraries until a task needs
+  them; the user's directive and later roadmap needs (Hypothesis in 1.3.4 and
+  2.2.2) outweigh that, and the suite was halved instead. Date/Author:
   2026-11-20, planning agent.
+- D9. Decision (terms-of-reference edits): edit only the §9 register's
+  resolution paths (implementation-home row: the accepted ADR; foreground row:
+  ADR 0003 and roadmap 5.1.2). Leave §4.2 ("needs a foreground mode"), the §4.3
+  CI row ("foreground execution"), and table 3 ("only foreground execution
+  remains viable") unchanged. Rationale: they state needs and conditions, which
+  deferral does not contradict, and the terms of reference should not carry
+  delivery sequencing. Date/Author: 2026-11-20, planning agent; from governance
+  review.
+- D10. Decision (status and date grammar enforced by tests): the first
+  non-blank line of the `## Status` body starts with one of `Proposed`,
+  `Accepted`, `Superseded`, or `Deprecated`; `Accepted` must be followed by a
+  space, a parenthesized ISO date such as `(2026-11-20)`, then a colon or full
+  stop, a space, and a non-empty summary; a trailing period is allowed; an
+  additional line starting `Amended by ADR-nnnn (YYYY-MM-DD)` is allowed. The
+  first non-blank line of the `## Date` body is `YYYY-MM-DD`, optionally
+  followed by a period. Rationale: the style guide requires a date and summary
+  for `Accepted` but fixes no syntax; a fixed syntax makes the rule testable
+  and matches the template's trailing periods. Date/Author: 2026-11-20,
+  planning agent; from test-architecture review.
 
 ## Outcomes & retrospective
 
@@ -340,157 +491,165 @@ Not started. Complete at each milestone and at completion.
 ## Context and orientation
 
 Inspected base revision: `4ab9802` ("Remove the tool list from AGENTS.md
-(#34)"). Line numbers below refer to that revision; relocate them with
-`grep -n` on the quoted heading.
+(#34)"), the `main` commit below `regenerate-typos-config`. Line numbers refer
+to that revision; relocate them with `grep -n` on the quoted heading.
 
-The repository is a Python 3.14 project generated from a template. Its package,
-`khufu/`, contains only `khufu/__init__.py` and `khufu/pure.py` (placeholders).
-Tests live in `tests/` and use pytest with `pytest-xdist` and `pytest-timeout`
-(30 seconds per test, `pyproject.toml` `[tool.pytest.ini_options]`). Existing
-tests are `tests/test_stub.py`, `tests/test_action_workflow.py` (which imports
-`scripts.action_workflow`), and `tests/test_codescene_publisher_wiring.py`,
-which is the closest pattern to a repository-file conformance test: it sets
-`ROOT = Path(__file__).resolve().parents[1]` and asserts over parsed workflow
-YAML and the Makefile, with an explanatory message on every assertion. There is
-no `conftest.py`, no fixtures directory, and no Markdown parsing yet.
-`pytest-bdd`, `hypothesis`, and `syrupy` are not dependencies today.
+The repository is a Python 3.14 project generated from a template. Its package
+`khufu/` contains only `khufu/__init__.py` and `khufu/pure.py`. Tests live in
+`tests/` and run under pytest 9.1.1 (from `uv.lock`) with `pytest-xdist` and
+`pytest-timeout` (30 seconds per test; `pyproject.toml`
+`[tool.pytest.ini_options]`, which also sets `testpaths = ["tests"]`). Existing
+tests are `tests/test_stub.py`, `tests/test_action_workflow.py`, and
+`tests/test_codescene_publisher_wiring.py`. The last is the closest pattern for
+a repository-file conformance test: it sets
+`ROOT = Path(__file__).resolve().parents[1]`, parses repository files, and
+gives every assertion a message. There is no `conftest.py` and no Markdown
+parsing yet. Neither `tests/` nor `scripts/` has an `__init__.py`;
+`tests/test_action_workflow.py` imports `scripts.action_workflow` because
+`[tool.uv] package = true` installs the project in editable mode, which puts
+the repository root on `sys.path` so both directories load as namespace
+packages. `ty` resolves the root the same way. `.gitignore` already lists
+`.hypothesis/`.
 
-Documents that matter, with the passages this plan changes:
+Lint constraints that shape the test code: interrogate requires a docstring on
+every function, including tests and steps; Vulture runs on `tests/` with
+`ignore_names = ["test_*", "pytestmark"]` and `min_confidence = 60`, so
+pytest-bdd step functions and fixtures need `ignore_decorators`, and every enum
+member and dataclass field must be read somewhere; the DF12 Pylint plugin flags
+three or more substring assertions against one subject in a test (R9109) and
+assertions against literals with eight or more leaves (R9108), so token checks
+compute a `missing` list and assert it is empty; the duplication gate
+(`min-size = 24`) forbids repeated test-text builders; the mutation workflow
+copies only paths in `[tool.mutmut] also_copy` plus `tests/` and
+`pyproject.toml`, so `docs/` must be added.
+
+Documents and the passages this plan changes:
 
 - `docs/khufu-design.md` (Draft v0.1, last substantive revision 2026-10-17):
-  front matter (precedence: accepted ADRs override the design); §1.1
-  "Implementation home" (lines 50-59, provisional pending ADR 0001; says Nile
-  Valley keeps the shared fixture specifications); §2 "Constraints and
-  non-goals" (lines 61-92, fixed substrate); §3.1 table row for Nile Valley
-  (line 109); §4.3 "Estate pinning" (lines 199-213); §5.1-5.2 (layering and the
-  single cluster adapter, lines 215-274); §7.1 "Lock and qualification" (lines
-  421-446); §8.1-8.2 (doctor and kind, lines 527-548); §11.3 "Supervision"
-  (lines 786-800, describes a foreground CI mode as present); §12.1 GitOps
-  suite (lines 889-894); §17 tables 7 and 8 (lines 1118-1140); §18 "Open
-  questions and ADR candidates" (lines 1142-1158).
-- `docs/terms-of-reference.md` (version 0.1): §3 bedrock (lines 58-62, Nile
-  Valley owns rendered platform fixtures); §4.2 (lines 117-121, CI needs a
-  foreground mode); §9 open-questions table (lines 304-312: the
-  implementation-home row targets `docs/adrs/adr-0001-implementation-home.md`;
-  a foreground-mode row is a pending design decision).
+  front matter; §1.1 "Implementation home" (lines 50-59: provisional pending
+  ADR 0001, and Nile Valley keeps the shared fixture specifications); §2 (lines
+  61-92, fixed substrate); §3.1 Nile Valley row (line 109); §4.3 "Estate
+  pinning" (lines 199-213); §5.1-5.2 (lines 215-274, single cluster adapter "is
+  a module, not a registry"); §7.1 (lines 421-446, platform lock); §8.1-8.2
+  (lines 527-548); §11.3 "Supervision" (lines 786-800, describes a foreground
+  CI mode as present); §12.1 GitOps suite (lines 889-894); §17 tables 7 and 8
+  (lines 1118-1140); §18 "Open questions and ADR candidates" (lines 1142-1158;
+  its anchor `#18-open-questions-and-adr-candidates` is linked from
+  `docs/developers-guide.md` line 95).
+- `docs/terms-of-reference.md` (version 0.1): §2 domain bedrock (lines 58-62,
+  Nile Valley owns rendered platform fixtures); §9 register (lines 304-312).
+- `docs/context.md`: the "Nile Valley" row (line 23, "owns … GitOps
+  fixtures") and the "Platform lock" row (line 43).
 - `docs/users-guide.md`: prerequisites (lines 36-45, "Hosts without one use
   the foreground execution mode") and "Execution modes" (lines 314-323).
-- `docs/roadmap.md`: 1.1 (lines 26-66), 2.1.1 (doctor checks, lines 244-252,
-  which omit session guarantees), 2.2.4 (supervision, requires 1.1.3), 5.1.1
-  (estate manifest), 5.1.2 (foreground mode, requires 1.1.3), 5.4.1 (first
-  consolidated release).
-- `docs/contents.md`: three groups (product definition, project guides,
-  engineering practice) and no ADR entries.
-- `docs/developers-guide.md`: lines 95-97 require recording substantive
-  decisions in an ADR; nothing describes ADR mechanics or doc-conformance tests.
-- `docs/documentation-style-guide.md`: "Architectural decision records
-  (ADRs)" (lines 515-662) defines naming, required sections, statuses
-  (`Proposed`, `Accepted`, `Superseded`, `Deprecated`), the amendment banner
-  (`Amended by ADR-nnnn (YYYY-MM-DD)`), conditional sections, and the template;
-  lines 303-320 define the ADR's job.
-- `docs/context.md`: vocabulary (estate manifest, Nile Valley, platform lock,
-  regression matrix, toolchain pin). Use these terms exactly.
+- `docs/developers-guide.md`: lines 95-97 ("ADR candidates … decisions
+  awaiting ratification").
+- `docs/roadmap.md`: 1.1 (lines 26-66); 2.1.1 (doctor checks, lines 244-252,
+  no session guarantees); 2.1.2 (kind creation); 2.2.4 (supervision); 2.6.4
+  (Episodic's thin delegate, the first consumer of a pinned release); 3.1.1
+  (platform lock); 5.1.1 (estate manifest); 5.1.2 (foreground mode); 7.1.1
+  (GitOps suite).
+- `docs/contents.md`: three groups, no ADR or ExecPlan entries.
+- `docs/documentation-style-guide.md`: ADR rules (lines 515-662) and the ADR's
+  purpose (lines 303-320).
+- `README.md`: checked; lines 26 and 31-32 are consistent with the planned
+  ADRs, so no change is planned.
 
-Gates (Makefile targets): `make fmt` (Ruff format and `mdtablefix` 0.6.1
-rewrap), `make check-fmt`, `make lint` (Ruff, interrogate at 100% docstring
-coverage, Pylint, DF12 lints, Ambrleaks on `tests/`, Skylos, Vulture on
-`tests/`, duplication, action lint), `make typecheck` (`ty`), `make test`
-(`uv run pytest -v -n auto`), `make markdownlint` (markdownlint-cli2 over
-`**/*.md`, then the `typos` spelling gate), and `make nixie` (Mermaid
-validation). Python test modules need docstrings on every function
-(interrogate) and must satisfy Vulture, so helpers must be used.
+Gates (Makefile targets): `make fmt`, `make check-fmt`, `make typecheck` (`ty`),
+`make lint` (Ruff, interrogate, Pylint with the DF12 plugin, Ambrleaks,
+Skylos, Vulture, duplication, action lint), `make test`
+(`uv run pytest -v -n auto`), `make audit` (`pip-audit`), `make markdownlint`
+(markdownlint-cli2 plus the `typos` spelling gate), and `make nixie` (Mermaid).
 
-External facts gathered during planning (each becomes an axiom below):
+External facts gathered during planning, each an axiom below:
 
-- systemd: `systemd-run --user` starts a transient service under the user's
-  service manager; a transient service keeps running when the invoking process
-  exits, unlike a `--scope` unit, which is tied to its caller.
-  (`systemd-run(1)`, freedesktop.org.)
-- logind: the per-user manager `user@.service` is stopped
-  `UserStopDelaySec=` (default 10 s) after the user's last session ends, unless
-  lingering is enabled; `loginctl enable-linger` spawns the user manager at
-  boot and keeps it after logout. `KillUserProcesses=` (default "no" in the
-  host's packaged documentation) governs session scopes, not services under the
-  user manager. (`logind.conf(5)` and `loginctl(1)` on the Rocky Linux 10 host,
-  systemd 257.)
-- kind rootless: requires cgroup v2 and delegation of the `cpu` controller to
-  user services (default from systemd 252); Podman 3.0 or later; may need
-  `systemd-run --scope --user -p Delegate=yes`; documents PID, inotify,
-  iptables-module, privileged-port, and log-driver hazards; rootless
-  restrictions include no block-storage or NFS mounts.
-  (<https://kind.sigs.k8s.io/docs/user/rootless/>.)
-- GitHub immutable releases (generally available 2025-10-28): assets and the
-  tag of a published immutable release cannot be added to, modified, moved, or
-  deleted; a deleted release's tag name cannot be reused.
-  (<https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases>.)
+- `systemd-run(1)`: `--user` talks to the user's service manager; a transient
+  service runs detached and keeps running when the invoking process exits; a
+  `--scope` runs the command synchronously in the caller's process, keeping its
+  environment and terminal; `--collect` unloads units after they stop,
+  successful ones immediately.
+- `logind.conf(5)` and `loginctl(1)` (systemd 257 on the Rocky Linux 10
+  planning host): `UserStopDelaySec=` (default 10 seconds) keeps
+  `user@.service` after the last session; `enable-linger` starts the user
+  manager at boot and keeps it after logout; `KillUserProcesses=` governs
+  session scopes.
+- kind rootless documentation[^1]: cgroup v2; `cpu` controller delegation for
+  user services (default from systemd 252); Podman 3.0 or later; possibly
+  `systemd-run --scope --user -p Delegate=yes`; PID, inotify, iptables-module,
+  privileged-port, and log-driver hazards; no block-storage or NFS mounts.
+- GitHub immutable releases[^2] (generally available 2025-10-28): once
+  published, assets cannot be added, modified, or deleted and the tag cannot be
+  moved; a deleted release's tag cannot be reused; the tag is unprotected until
+  publication.
+- uv documentation: PyPI does not accept packages with direct-URL
+  dependencies.
 
-Relevant skills for the implementer: `execplans` (this format),
-`hexagonal-architecture` (pure rules versus filesystem adapter),
-`python-router`, `python-testing`, and `hypothesis` (test design),
-`en-gb-oxendict-style` (prose), and `commit-message`.
+Skills for the implementer: `execplans`, `hexagonal-architecture` (pure rules
+versus the thin filesystem edge), `python-router`, `python-testing`,
+`hypothesis`, `en-gb-oxendict-style`, `commit-message`, and `mapsplice` if
+roadmap tasks are inserted.
 
 ## Conformance basis
 
 Upstream artefacts, all at revision `4ab9802`:
 
-- Terms of reference: `docs/terms-of-reference.md`, version 0.1; §3, §4.2,
-  §4.3, §9 (open questions register, table 4).
+- Terms of reference: `docs/terms-of-reference.md`, version 0.1; §2, §4.2,
+  §4.3, §9 (table 4).
 - Technical design: `docs/khufu-design.md`, Draft v0.1 (2026-10-17); §1.1,
-  §2, §3.1, §4.3, §5.1-5.2, §7.1, §8.1-8.2, §11.1, §11.3, §12.1, §17, §18.
-- Roadmap: `docs/roadmap.md`, tasks 1.1.1-1.1.4 and dependants 1.2.1,
-  1.2.2, 1.3.1, 2.1.1, 2.2.4, 5.1.1, 5.1.2, 5.4.1.
+  §2, §3.1, §3.2, §4.3, §5.1-5.2, §7.1, §8.1-8.2, §10.3, §11.1, §11.3, §12.1,
+  §17, §18.
+- Roadmap: `docs/roadmap.md`, tasks 1.1.1-1.1.4 and the tasks named above.
 - Governing standard: `docs/documentation-style-guide.md`, ADR section.
 - ADRs: none exist; this plan creates the first four.
 
-Requirements derived for this plan:
+Requirements:
 
-- `REQ-HOME` (roadmap 1.1.1; ToR §9 row 1; design §1.1, §4.3, §18): one
-  accepted ADR names the code home (`leynos/khufu`), the estate-manifest home
-  (`validation-estate.toml` in `leynos/nile-valley`), the regression-matrix
-  home (Nile Valley), and the release channel consumers pin; it records the
-  divergence from the source design and the release and pinning consequences.
+- `REQ-HOME` (roadmap 1.1.1; terms of reference §9 row 1; design §1.1, §4.3,
+  §18): one accepted ADR names the code home, the estate-manifest home, the
+  regression-matrix home, the Nile Valley responsibilities, and the release
+  channel consumers pin, and records the divergence from the source design and
+  the release and pinning consequences.
 - `REQ-SUBSTRATE` (roadmap 1.1.2; design §2, §5.1, §17 table 7): one accepted
-  ADR fixes the stack and forbids `--provider`, `--engine`, k3d, Docker,
-  rootful fallback, and alternate-cluster plug-ins, and states that test
-  doubles are not production extension points.
+  ADR fixes the stack, forbids `--provider`, `--engine`, k3d, Docker, rootful
+  fallback, and alternate-cluster plug-ins, and states that test doubles are
+  not production extension points.
 - `REQ-SUPERVISION` (roadmap 1.1.3; design §11.1, §11.3, §17 table 8): one
   accepted ADR makes transient systemd user services the worker owners and
   waiting CLIs observers, defers the foreground mode, and lists the
   session-survival limits `doctor` must report.
 - `REQ-FIXTURES` (roadmap 1.1.4; design §3.1, §7.1, §12.1, §18): one accepted
   ADR names the owning repository, each side's consumption mechanism, and the
-  version-alignment rule with the platform lock, such that both renderers
-  consume one specification source.
-- `REQ-FORMAT` (style guide): every ADR satisfies naming, heading-order, and
-  status rules.
-- `REQ-TRACE` (AGENTS.md documentation maintenance; ToR "indexed in
-  `docs/contents.md`"): the design §18, the relevant design sections, the
-  terms-of-reference register, and `docs/contents.md` link the accepted ADRs,
-  and no live document contradicts them.
+  alignment rule with the platform lock.
+- `REQ-FORMAT` (style guide): every ADR satisfies naming, heading-order,
+  status, and date rules.
+- `REQ-TRACE` (AGENTS.md documentation maintenance; terms of reference
+  "indexed in `docs/contents.md`"): design §18 and `docs/contents.md` link each
+  accepted ADR, and no live document contradicts them.
 
-Gaps observed at the base revision:
+Gaps at the base revision:
 
 - `GAP-NO-ADRS`: `docs/adrs/` does not exist.
-- `GAP-FOREGROUND`: design §11.3, users' guide, and ToR §4.2 and §9 present
-  the foreground mode as current, contradicting roadmap 1.1.3 and 5.1.2.
+- `GAP-FOREGROUND`: design §11.3 and the users' guide present the foreground
+  mode as current.
 - `GAP-SESSION-LIMITS`: no document enumerates session-survival limits;
-  roadmap 2.1.1's doctor checklist omits them.
-- `GAP-RELEASE-CHANNEL`: no release channel is defined; the PyPI name is taken;
-  immutable releases are off.
-- `GAP-FIXTURE-ALIGNMENT`: no document states how fixture specification
-  versions align with the platform lock; design §1.1 presupposes an owner that
-  §18 leaves open.
+  roadmap 2.1.1 omits them.
+- `GAP-RELEASE-CHANNEL`: no channel is defined; the PyPI name is taken;
+  immutable releases and tag rules are off.
+- `GAP-FIXTURE-ALIGNMENT`: nothing states how specification versions align
+  with the platform lock; design §1.1 presupposes an owner that §18 leaves open.
 - `GAP-ADR-INDEX`: `docs/contents.md` indexes no ADRs.
 
 Trace chains:
 
 ```plaintext
-ToR-§9-row1 -> REQ-HOME -> design §1.1/§4.3/§18 -> EP-M2 -> tests/test_decision_records_repository.py::test_foundational_adr_is_accepted[0001]
-roadmap-1.1.2 -> REQ-SUBSTRATE -> design §2/§17 -> EP-M1, EP-M3 -> tests/test_substrate_fitness.py
-roadmap-1.1.3 -> REQ-SUPERVISION, GAP-FOREGROUND, GAP-SESSION-LIMITS -> design §11.3 -> EP-M4 -> tests/features/decision_records.feature
-roadmap-1.1.4 -> REQ-FIXTURES, GAP-FIXTURE-ALIGNMENT -> design §3.1/§7.1 -> EP-M5 -> test_foundational_adr_is_accepted[0004]
+ToR §9 row 1 -> REQ-HOME -> design §1.1, §4.3 -> EP-M2 -> test_foundational_adr_is_accepted[0001]
+roadmap 1.1.2 -> REQ-SUBSTRATE -> design §2, §17 -> EP-M1, EP-M3 -> tests/test_substrate_fitness.py
+roadmap 1.1.3 -> REQ-SUPERVISION, GAP-FOREGROUND, GAP-SESSION-LIMITS -> design §11.3 -> EP-M4
+  -> test_foundational_adr_is_accepted[0003]
+roadmap 1.1.4 -> REQ-FIXTURES, GAP-FIXTURE-ALIGNMENT -> design §3.1, §7.1 -> EP-M5
+  -> test_foundational_adr_is_accepted[0004]
 style guide -> REQ-FORMAT -> EP-M1 -> tests/test_decision_record_rules.py
-AGENTS.md -> REQ-TRACE, GAP-ADR-INDEX -> EP-M2..EP-M6 -> test_design_and_contents_link_accepted_adrs
+AGENTS.md -> REQ-TRACE, GAP-ADR-INDEX -> EP-M2 to EP-M5 -> test_adr_is_linked[0001..0004]
 ```
 
 ## Verification plan
@@ -498,146 +657,155 @@ AGENTS.md -> REQ-TRACE, GAP-ADR-INDEX -> EP-M2..EP-M6 -> test_design_and_content
 ### Abstract model
 
 A decision-record set is a finite map from file names in `docs/adrs/` to
-Markdown texts. A file name is valid when it matches `adr-NNNN-SLUG.md`, where
-`NNNN` is four decimal digits and `SLUG` is one or more lowercase ASCII
+Markdown texts. A file name is valid when it equals `f"adr-{n:04d}-{slug}.md"`
+for an integer `n` in 0-9999 and a slug of one or more lowercase ASCII
 alphanumeric words joined by single hyphens. A text is a valid record when its
-first heading is `# Architectural decision record (ADR) NNNN: TITLE`, its
-level-two headings begin with `Status`, `Date`, `Context and problem statement`
-in that order, the `Status` body begins with one of the four permitted status
-words, an `Accepted` status carries an ISO date (`YYYY-MM-DD`) and a summary
-sentence, a `Superseded` status names an existing ADR, and the `Date` body is
-an ISO date. The record is consistent with its file name when the heading's
-number equals `NNNN` and the kebab-case rendering of `TITLE` equals `SLUG`.
+first heading is `# Architectural decision record (ADR) NNNN: TITLE`; its
+level-two headings, ignoring those inside fenced code blocks, begin with
+`Status`, `Date`, and `Context and problem statement` in that order; its Status
+and Date bodies satisfy D10; and, when `Accepted`, it has a
+`## Decision outcome` section. The record is consistent with its file name when
+the heading number equals `n` and `slugify(TITLE)` equals the slug. A section's
+text runs from its heading to the next level-two heading, so `### Consequences`
+belongs to `## Decision outcome`.
 
-Malformed input (unreadable file, missing heading) yields a named violation for
-that file rather than an exception, so the suite reports every problem at once.
+Fenced code blocks follow CommonMark: an opening run of three or more backticks
+or tildes, closed by a run of the same character at least as long.
 
-The substrate fitness rules operate on two inputs: the parsed `pyproject.toml`
-mapping and the set of `(path, text)` pairs for Python files under `khufu/`. A
-violation is any `project.entry-points` table, any call spelled `entry_points(`
-or `importlib.metadata.entry_points`, or any string literal equal to
-`--provider` or `--engine` (detected with the `ast` module, not regular
-expressions, so comments and documentation do not trip it).
+Malformed input yields named violations (for example `bad-file-name`,
+`missing-title`, `heading-order`, `unknown-status`, `accepted-without-date`,
+`accepted-without-summary`, `bad-date`, `title-slug-mismatch`,
+`duplicate-number`, `missing-decision-outcome`), never an exception, so one run
+reports every problem.
 
 ### Invariants and lemmas
 
-- `INV-FILENAME` (`REQ-FORMAT`): a file name is accepted exactly when it
-  matches the grammar, and parsing a formatted `(number, slug)` pair returns
-  that pair.
-- `INV-SLUG` (`REQ-FORMAT`): for every title, `slugify(title)` is a valid
-  slug or empty, and is idempotent (`slugify(slugify(t)) == slugify(t)`).
-- `INV-UNIQUE` (`REQ-FORMAT`): the registry reports a duplicate-number
-  violation exactly when two file names share a number.
-- `INV-STATUS` (`REQ-FORMAT`): a record's status is classified as exactly one
-  of the four permitted values or reported as invalid; `Accepted` without a
-  date or summary is invalid.
+- `INV-FILENAME` (`REQ-FORMAT`): for every `n` in 0-9999 and every valid slug,
+  parsing `f"adr-{n:04d}-{slug}.md"` returns `(n, slug)`.
+- `INV-SLUG` (`REQ-FORMAT`): for every text `t`, `slugify(t)` is empty or a
+  valid slug, `slugify(slugify(t)) == slugify(t)`, and when `slugify(t)` is
+  non-empty, `f"adr-0001-{slugify(t)}.md"` parses. Accented letters are
+  transliterated (style guide: "Transliterate accented letters").
+- `INV-RECORD` (`REQ-FORMAT`): each malformed status, date, title, and heading
+  layout in the truth table yields exactly its named violation, and each
+  well-formed layout yields none.
 - `INV-FOUNDATION` (`REQ-HOME`, `REQ-SUBSTRATE`, `REQ-SUPERVISION`,
-  `REQ-FIXTURES`): the repository registry contains ADRs 0001-0004 at the
-  roadmap paths, each `Accepted`, each valid, and each naming the tokens its
-  roadmap success criterion requires (table in `EP-M1`).
-- `INV-TRACE` (`REQ-TRACE`): every `Accepted` ADR is linked by relative path
-  from `docs/khufu-design.md` §18 and from `docs/contents.md`.
+  `REQ-FIXTURES`): the repository contains ADRs 0001-0004 at the roadmap paths,
+  each valid, `Accepted`, and naming in its `## Decision outcome` section the
+  identifiers its roadmap criterion requires.
+- `INV-TRACE` (`REQ-TRACE`): each of ADRs 0001-0004 exists and is linked by
+  relative path from design §18 and from `docs/contents.md`.
 - `INV-NO-PLUGIN` (`REQ-SUBSTRATE`): the fitness rules report no violation for
-  the repository, and report a violation for each seeded forbidden surface.
-- `L-ORDER`: the heading-order check depends on extracting level-two headings
-  in document order while ignoring headings inside fenced code blocks. This
-  lemma connects `INV-STATUS` to real files whose code fences contain `#` lines.
+  the repository and exactly one for each seeded forbidden surface.
+- `L-SECTIONS`: heading extraction ignores fenced code, so `INV-RECORD` and
+  `INV-FOUNDATION` hold for real files whose code fences contain `#` lines.
 
 ### Axioms (trusted, not verified here)
 
-- `AXIOM-SYSTEMD-TRANSIENT`: a transient service started by
-  `systemd-run --user` is owned by the user manager and survives exit of the
-  invoking process (`systemd-run(1)`). Relied on by ADR 0003.
-- `AXIOM-LOGIND-LINGER`: without lingering, the user manager stops shortly
-  after the last session ends (`UserStopDelaySec=`, default 10 s), stopping its
-  services; with lingering it starts at boot and persists across logout
-  (`logind.conf(5)`, `loginctl(1)`). No transient unit survives a reboot.
-  Relied on by ADR 0003's session-survival limits.
-- `AXIOM-KIND-ROOTLESS`: kind's documented rootless requirements and hazards
-  (cgroup v2, `cpu` delegation, Podman 3.0 or later, PID and inotify limits,
-  iptables modules, privileged ports, log driver). Relied on by ADR 0002.
-- `AXIOM-GH-IMMUTABLE`: GitHub immutable releases lock tag and assets after
-  publication. Relied on by ADR 0001.
-- `AXIOM-OPENTOFU-JSON`: OpenTofu's `jsondecode` and `file` functions read
-  JSON documents at plan time. Relied on by ADR 0004's Nile Valley consumption
-  mechanism.
-- `AXIOM-PYTEST-BDD`: `pytest-bdd` 9 binds Gherkin steps to Python functions
-  and runs under `pytest-xdist`.
-
-These axioms are not tested here. The ADRs cite their sources. Where later
-roadmap tasks build on them (2.1.1 for doctor, 2.2.4 for supervision), those
-tasks verify the repository-owned logic against the real interfaces.
+- `AXIOM-SYSTEMD-TRANSIENT`: `systemd-run(1)` semantics for `--user`,
+  transient services, `--scope`, `--collect`, `Type=exec`, `ExecStopPost=`, and
+  `InvocationID`. ADR 0003 depends on them; roadmap 2.2.4 tests them.
+- `AXIOM-LOGIND-LINGER`: `logind.conf(5)` and `loginctl(1)` semantics for
+  `UserStopDelaySec=`, lingering, and `KillUserProcesses=`; no transient unit
+  survives a reboot. ADR 0003 depends on them; roadmap 2.1.1 tests the `doctor`
+  findings.
+- `AXIOM-KIND-ROOTLESS`: kind's documented rootless requirements and hazards.
+  ADR 0002 depends on them; roadmap 2.1.1 and 2.1.2 test them.
+- `AXIOM-GH-IMMUTABLE`: GitHub immutable releases guarantee integrity of a
+  published tag and its assets, not availability. ADR 0001 depends on it.
+- `AXIOM-PYPI-DIRECT-URL`: PyPI rejects distributions whose metadata contains
+  direct-URL dependencies. ADR 0001 depends on it.
+- `AXIOM-PYTEST-BDD`: `pytest-bdd` 9 binds Gherkin steps to Python functions,
+  applies pytest marks to `@scenario`-bound tests, skips already-bound
+  scenarios in a later `scenarios()` call, and runs under `pytest-xdist`. The
+  suite depends on it; `EP-M1` exercises it.
 
 ### Methods per obligation
 
-- Obligation: `INV-FILENAME`. Method: Hypothesis property plus named
-  examples. Rationale: the grammar spans an open domain of names. Domain:
-  integers 0-9999 with
-  `st.from_regex(r"[a-z0-9]+(-[a-z0-9]+)*", fullmatch=True)` slugs; arbitrary
-  text for rejection. Artefact:
-  `tests/test_decision_record_rules.py::test_filename_round_trip` and
-  `::test_filename_rejects_non_matching_names`. Evidence:
-  `uv run pytest tests/test_decision_record_rules.py -k filename` fails with
-  `ImportError` before the rules exist and passes after. Non-vacuity: named
-  rejection examples `adr-1-x.md`, `adr-0001-X.md`, `adr-0001-a--b.md`,
-  `ADR-0001-a.md`, `adr-0001-.md`; the rejection property uses an oracle
-  regular expression written independently in the test and records
-  `hypothesis.event` labels for accepted and rejected classes; a seeded fault
-  (allowing three-digit numbers) must fail the `adr-001-x.md` example.
-- Obligation: `INV-SLUG`. Method: Hypothesis property over `st.text()`.
-  Artefact: `::test_slugify_is_idempotent_and_valid`. Non-vacuity: named
-  examples map `Fixed kind rootless substrate` to
-  `fixed-kind-rootless-substrate` and `Systemd user service supervision` to
-  `systemd-user-service-supervision`; a seeded fault that keeps uppercase
-  letters must fail.
-- Obligation: `INV-UNIQUE`. Method: Hypothesis property over lists of
-  `(number, slug)` pairs with an oracle computed by `collections.Counter`.
-  Artefact: `::test_duplicate_numbers_are_reported_exactly`. Non-vacuity:
-  `hypothesis.event` records "has duplicates" and "no duplicates"; both must
-  appear in the statistics output (`--hypothesis-show-statistics`).
-- Obligation: `INV-STATUS` and `L-ORDER`. Method: parameterized pytest over a
-  finite truth table of status bodies and heading layouts (four valid statuses,
-  unknown word, missing date, missing summary, superseded without a target,
-  superseded with a target, headings out of order, a `## Status` line inside a
-  fenced block). Artefact: `::test_status_classification` and
-  `::test_required_heading_order`. Non-vacuity: each row asserts the specific
-  violation code, so a rule that accepts everything fails every negative row.
-- Obligation: `INV-FOUNDATION` and `INV-TRACE`. Method: repository tests over
-  the real `docs/` tree plus a BDD feature. Artefact:
-  `tests/test_decision_records_repository.py` and
-  `tests/features/decision_records.feature` with
+- Obligation: `INV-FILENAME`. Method: Hypothesis property with a construction
+  oracle, plus named rejection examples. Domain: `st.integers(0, 9999)` and
+  slugs from `st.from_regex(r"[a-z0-9]+(-[a-z0-9]+)*", fullmatch=True)`.
+  Artefact: `tests/test_decision_record_rules.py::test_file_name_round_trip` and
+  `::test_file_name_rejections` (parameterized). Evidence: before the rules
+  module exists, collection fails with `ModuleNotFoundError`; afterwards both
+  pass. Non-vacuity: the oracle is the f-string construction, not a second
+  regular expression; rejection rows `adr-1-x.md`, `adr-0001-X.md`,
+  `adr-0001-a--b.md`, `ADR-0001-a.md`, `adr-0001-.md`, and `adr-00001-a.md`
+  each assert `None`; seeded fault: accept three-digit numbers, and
+  `adr-001-x.md` must fail.
+- Obligation: `INV-SLUG`. Method: Hypothesis property over `st.text()` plus
+  named examples. Artefact: `::test_slugify_is_idempotent_and_parseable` and
+  `::test_slugify_examples`. Non-vacuity: `@example` cases include an empty
+  string, punctuation only, and accented text; named examples map
+  `Implementation home`, `Fixed kind rootless substrate`,
+  `Systemd user service supervision`, `Shared fixture specifications`, and
+  `Café` to `implementation-home`, `fixed-kind-rootless-substrate`,
+  `systemd-user-service-supervision`, `shared-fixture-specifications`, and
+  `cafe`; seeded fault: keep uppercase letters, and the example rows fail.
+- Obligation: `INV-RECORD` and `L-SECTIONS`. Method: parameterized truth
+  table, one row per class, every row built by one shared helper
+  (`record_text(...)`) that the BDD steps also use. Rows: each of the four
+  status words (so every `Status` member is referenced); `Accepted` with and
+  without date and summary; an unknown word; an amendment banner; a valid and
+  an invalid date, with and without a trailing period; title and slug match and
+  mismatch; headings out of order; a `## Status` line inside a three-backtick
+  fence, a `~~~` fence, and a four-backtick fence containing three backticks; an
+  `Accepted` record without `## Decision outcome`; two files sharing a number.
+  Artefact: `::test_record_violations`. Non-vacuity: each row asserts the exact
+  set of violation codes, so a rule that accepts everything fails every
+  negative row, and one that rejects everything fails every positive row.
+- Obligation: `INV-FOUNDATION` and `INV-TRACE`. Method: repository tests and a
+  BDD scenario. Artefact: `tests/test_decision_records_repository.py`
+  (`test_registry_is_valid`, `test_foundational_adr_is_accepted[0001..0004]`,
+  `test_adr_is_linked[0001..0004]`) and
+  `tests/features/decision_records.feature` bound by
   `tests/test_decision_records_bdd.py`. Evidence: in `EP-M1` each per-ADR case
-  carries `@pytest.mark.xfail(strict=True, reason="ADR nnnn lands in EP-Mk")`;
-  the marker is removed in the milestone that lands the ADR, so a strict xfail
-  that unexpectedly passes or a test that still fails stops the milestone.
-  Non-vacuity: the BDD feature includes negative scenarios over in-memory
-  records, and the repository loader is exercised against a temporary directory
-  containing one broken record.
-- Obligation: `INV-NO-PLUGIN`. Method: example-based fitness tests with seeded
-  negative controls. Artefact: `tests/test_substrate_fitness.py`. Evidence: the
-  rules report zero violations for the repository and exactly one for each
-  synthetic input: a `pyproject` mapping with
-  `{"project": {"entry-points": {"khufu.providers": {...}}}}`, a source text
-  calling `importlib.metadata.entry_points(group="khufu.providers")`, and a
-  source text defining `Parameter(name="--provider")`. Non-vacuity: the
-  repository scan must visit at least the two existing files in `khufu/`
-  (asserted), so an empty glob cannot pass silently.
+  carries `pytest.mark.xfail(strict=True, reason="ADR nnnn lands in EP-Mk")`
+  through `pytest.param(..., marks=...)`; each ADR milestone removes the two
+  markers for its ADR; the BDD foundation scenario is bound with
+  `@scenario(...)` plus `@pytest.mark.xfail(strict=True)` until `EP-M5`. Both
+  link and acceptance cases first assert the ADR file exists, so they fail (and
+  strict xfail holds) before the ADR lands. Non-vacuity: token checks compute
+  `missing = [t for t in tokens if t not in section]` within
+  `## Decision outcome` only and assert `not missing`; a seeded fault that
+  deletes one token from an ADR's decision outcome must fail its case.
+- Obligation: `INV-NO-PLUGIN`. Method: example-based fitness tests with
+  seeded negative controls. Artefact: `tests/test_substrate_fitness.py`.
+  Evidence: zero violations for the repository; exactly one violation code for
+  each synthetic input: a pyproject mapping with an entry-point group; a
+  pyproject mapping with only `[project.scripts]` (zero violations); source
+  texts with `from importlib.metadata import entry_points as ep`,
+  `import pluggy`, `def run(provider: str) -> None: ...`, and
+  `Parameter(name="--engine")`. Non-vacuity: the repository scan asserts it
+  parsed at least the two existing files under `khufu/`, so an empty glob
+  cannot pass.
+
+Required identifiers per ADR, matched in `## Decision outcome` only. They are
+stable names, not prose or roadmap numbers:
+
+```plaintext
+0001: leynos/khufu, leynos/nile-valley, validation-estate.toml, SHA-256
+0002: --provider, --engine, k3d, Docker, rootful
+0003: systemd-run --user, InvocationID, linger, doctor
+0004: platform.lock.toml, digest, plus the owning repository name from the D7 answer
+```
 
 ### Formal verification decision
 
 No model checking or formal proof is warranted. The obligations are syntactic
-checks over finite documents and a filename grammar; Hypothesis covers the
-open-ended grammar and parameterized tables cover the finite status and heading
-partitions. The substantive claims inside the ADRs (systemd lifetimes, kind
-requirements, immutable releases) are external axioms that later roadmap tasks
-test against real interfaces.
+checks over finite documents and a filename grammar. Hypothesis covers the
+open-ended grammar; truth tables cover the finite status, date, and heading
+classes. The substantive claims inside the ADRs (systemd lifetimes, kind
+requirements, immutable releases) are external axioms that roadmap tasks 2.1.1,
+2.1.2, and 2.2.4 test against the real interfaces.
 
-### Suggested BDD features
+### BDD feature
 
-Adopted (not merely proposed), because the user requires `pytest-bdd` where
-applicable. Path: `tests/features/decision_records.feature`, bound by
-`tests/test_decision_records_bdd.py` with
-`scenarios("features/decision_records.feature")`.
+Adopted, at `tests/features/decision_records.feature`, bound by
+`tests/test_decision_records_bdd.py`. The foundation scenario is bound first
+with `@scenario` and a strict xfail mark until `EP-M5`; `scenarios(...)` then
+binds the rest. Steps call the same rule functions and the shared
+`record_text(...)` builder used by the unit tests.
 
 ```gherkin
 Feature: Foundational decision records
@@ -648,7 +816,7 @@ Feature: Foundational decision records
     Given the decision records in the repository
     When the decision-record registry is validated
     Then ADRs 0001, 0002, 0003, and 0004 are accepted
-    And every accepted ADR is linked from the design document and the contents index
+    And each of them is linked from the design document and the contents index
     And the registry reports no violations
 
   Scenario: A record with an unknown status is rejected
@@ -656,13 +824,7 @@ Feature: Foundational decision records
     When the decision-record registry is validated
     Then the registry reports the violation "unknown-status" for "adr-0099-example.md"
 
-  Scenario: An accepted record without a decision summary is rejected
-    Given a decision record "adr-0099-example.md" whose status is "Accepted"
-    And the status has no summary sentence
-    When the decision-record registry is validated
-    Then the registry reports the violation "accepted-without-summary" for "adr-0099-example.md"
-
-  Scenario: A record whose title does not match its filename is rejected
+  Scenario: A record whose title does not match its file name is rejected
     Given a decision record "adr-0099-example.md" titled "Something else"
     When the decision-record registry is validated
     Then the registry reports the violation "title-slug-mismatch" for "adr-0099-example.md"
@@ -674,309 +836,300 @@ Feature: Foundational decision records
 ```
 
 Scenario 1 traces to `REQ-HOME`, `REQ-SUBSTRATE`, `REQ-SUPERVISION`,
-`REQ-FIXTURES`, and `REQ-TRACE` and is strict-xfail until `EP-M5`; the others
-trace to `REQ-FORMAT` and `REQ-SUBSTRATE` and pass from `EP-M1` (green half).
+`REQ-FIXTURES`, and `REQ-TRACE`; scenarios 2 and 3 to `REQ-FORMAT`; scenario 4
+to `REQ-SUBSTRATE`. Scenarios 2-4 pass from `EP-M1`.
 
 ## Plan of work
 
-Each milestone is one or more atomic commits, each gated. Run the gate sequence
-in `Concrete steps` at the end of every milestone.
+Each milestone ends with the gate sequence in `Concrete steps` and one or more
+atomic commits. Every ADR milestone adds that ADR's entry to the "Decision
+records" group in `docs/contents.md` and its link in design §18, and removes
+its two strict-xfail markers, so the documents and tests never disagree at a
+milestone boundary.
 
 ### `EP-M1` decision-record suite and substrate fitness rules
 
-Assigned: `REQ-FORMAT`, `INV-*` rules, `INV-NO-PLUGIN`, D4, D8.
+Assigned: `REQ-FORMAT`, `INV-FILENAME`, `INV-SLUG`, `INV-RECORD`,
+`INV-NO-PLUGIN`, D4, D8, D10.
 
-1. Configuration: in `pyproject.toml`, add `"pytest-bdd==9.0.1"` and
-   `"hypothesis==6.170.17"` (or the newest patch releases available at
-   implementation time, pinned exactly to match the `ruff`, `cyclopts`, and
-   `ty` pin style) to `[dependency-groups] dev`, and add `"docs/"` to
-   `[tool.mutmut] also_copy`. Run `uv lock`. Commit separately ("Add pytest-bdd
+1. Configuration commit. In `pyproject.toml`: add `"pytest-bdd==9.0.1"` and
+   `"hypothesis==6.170.17"` (or the newest patch releases at implementation
+   time, pinned exactly in the style of the `ruff`, `cyclopts`, and `ty` pins)
+   to `[dependency-groups] dev`; add `"docs/"` to `[tool.mutmut] also_copy`; add
+   `pythonpath = ["."]` to `[tool.pytest.ini_options]`; add
+   `ignore_decorators = ["@given", "@when", "@then", "@pytest.fixture"]` to
+   `[tool.vulture]`. Run `uv lock`, then `make audit`. Commit ("Add pytest-bdd
    and Hypothesis for decision-record tests").
-2. Red: write `tests/test_decision_record_rules.py` (unit and property
-   tests from `Verification plan`) importing from `tests.decision_records`
-   (follow whichever import style `tests/test_action_workflow.py` uses
-   successfully for `scripts.action_workflow`; if `ty` or pytest cannot resolve
-   it, place the module where the existing pattern resolves and record the
-   choice in `Decision log`). Run
-   `uv run pytest tests/test_decision_record_rules.py`; expect collection to
-   fail with `ModuleNotFoundError` for `tests.decision_records` (or the
-   resolved equivalent).
-3. Green: write the pure rules module `tests/decision_records.py`. It holds
-   no I/O. Proposed public surface (all frozen dataclasses or enums):
+2. Red. Write `tests/test_decision_record_rules.py` importing
+   `import tests.decision_records as dr`. Run
+   `uv run pytest tests/test_decision_record_rules.py`; expect
+   `ModuleNotFoundError: No module named 'tests.decision_records'`.
+3. Green. Write `tests/decision_records.py`: pure functions over strings, no
+   I/O. Proposed surface:
 
    ```python
+   import collections.abc as cabc
+   import dataclasses as dc
+   import enum
+
+
    class Status(enum.StrEnum):
        PROPOSED = "Proposed"
        ACCEPTED = "Accepted"
        SUPERSEDED = "Superseded"
        DEPRECATED = "Deprecated"
 
-   @dataclass(frozen=True, slots=True)
+
+   @dc.dataclass(frozen=True, slots=True)
    class Violation:
        file_name: str
-       code: str      # stable kebab-case code, for example "unknown-status"
-       detail: str
+       code: str  # stable kebab-case code, for example "unknown-status"
 
-   @dataclass(frozen=True, slots=True)
-   class DecisionRecord:
-       file_name: str
-       number: int
-       slug: str
-       title: str
-       status: Status
-       headings: tuple[str, ...]
 
    def parse_file_name(file_name: str) -> tuple[int, str] | None: ...
    def slugify(title: str) -> str: ...
-   def level_two_headings(text: str) -> tuple[str, ...]: ...
-   def parse_record(file_name: str, text: str) -> DecisionRecord | Violation: ...
-   def validate_registry(files: Mapping[str, str]) -> tuple[Violation, ...]: ...
+   def level_two_sections(text: str) -> dict[str, str]: ...
+   def record_status(text: str) -> Status | None: ...
+   def record_violations(file_name: str, text: str) -> frozenset[str]: ...
+   def registry_violations(files: cabc.Mapping[str, str]) -> tuple[Violation, ...]: ...
    ```
 
-   Then write `tests/decision_record_loader.py`: one function,
-   `load_registry(directory: Path) -> dict[str, str]`, that reads every `*.md`
-   file in `directory` (empty mapping when the directory is absent). This is
-   the only module that touches the filesystem.
-4. Red for the repository: write `tests/test_decision_records_repository.py`
-   with `test_registry_is_valid`, `test_foundational_adr_is_accepted`
-   (parameterized over 0001-0004 with each ADR's required tokens; see the table
-   below), and `test_design_and_contents_link_accepted_adrs`. Mark each
-   0001-0004 case and the link test with
-   `@pytest.mark.xfail(strict=True, reason="ADR nnnn lands in EP-Mk")`.
-   `test_registry_is_valid` passes on an empty directory.
-5. Write `tests/features/decision_records.feature` and
-   `tests/test_decision_records_bdd.py`. Scenario 1 is strict-xfail until
-   `EP-M5`.
-6. Write `tests/test_substrate_fitness.py` with the pure rules
-   (`entry_point_violations(pyproject: Mapping[str, object])` and
-   `source_violations(path: str, text: str)` using `ast`) and the repository
-   and seeded tests. Keep the rules in the test module unless the file nears
-   400 lines; then move them to `tests/substrate_fitness.py`.
-7. Run the full gate sequence. Commit ("Add decision-record conformance
+   Rerun the focused tests until green. Put the shared `record_text(...)`
+   builder in the rule test module, or in `tests/conftest.py` if the BDD module
+   needs it too.
+4. Repository tests. Write `tests/test_decision_records_repository.py`. A
+   fixture reads `ROOT / "docs" / "adrs" / "*.md"` into a mapping (an empty
+   mapping when the directory is absent); this is the only filesystem access.
+   `test_registry_is_valid` passes now. The eight per-ADR cases carry strict
+   xfail markers as described in `Verification plan`.
+5. BDD. Write the feature and `tests/test_decision_records_bdd.py` as
+   described above.
+6. Fitness rules. Write `tests/test_substrate_fitness.py` with
+   `entry_point_violations(pyproject: cabc.Mapping[str, object]) -> list[str]`
+   and `source_violations(text: str) -> list[str]` (using `ast`), the
+   repository test, and the seeded tests.
+7. Negative controls. Apply each seeded fault from `Verification plan` in the
+   working tree, observe the expected failure, record the transcript in
+   `Artefacts and notes`, and revert with `git checkout -- <file>`.
+8. Run the full gate sequence. Commit ("Add decision-record conformance
    suite").
 
-Required-token table for `test_foundational_adr_is_accepted` (tokens are
-matched case-sensitively within the ADR's `## Decision outcome` section only,
-so context prose cannot satisfy them):
-
-```plaintext
-0001: "leynos/khufu", "leynos/nile-valley", "validation-estate.toml", "regression matrix", "GitHub Releases", "SHA-256"
-0002: "rootless Podman", "kind", "kubectl", "Helm", "--provider", "--engine", "k3d", "Docker", "rootful", "test doubles"
-0003: "systemd-run --user", "observer", "5.1.2", "linger", "doctor"
-0004: "leynos/khufu", "Nile Valley", "platform lock", "jsondecode", "SHA-256"
-```
+End state: rule, property, fitness, and negative BDD tests pass; eight per-ADR
+cases and the foundation scenario are strict xfails.
 
 ### `EP-M2` ADR 0001: implementation home
 
-Assigned: `REQ-HOME`, `GAP-RELEASE-CHANNEL`, `GAP-ADR-INDEX` (first entry),
-D1-D3.
+Assigned: `REQ-HOME`, `GAP-RELEASE-CHANNEL`, `GAP-ADR-INDEX`, D1-D3.
 
-Create `docs/adrs/adr-0001-implementation-home.md` titled
-`# Architectural decision record (ADR) 0001: Implementation home`. Content:
+Create `docs/adrs/adr-0001-implementation-home.md`, titled
+`# Architectural decision record (ADR) 0001: Implementation home`.
 
-- Status: `Accepted` with the acceptance date and the summary "Khufu's code,
+- Status: `Accepted (<approval date>)` followed by the summary "Khufu's code,
   package, and releases live in `leynos/khufu`; Nile Valley hosts the estate
-  manifest and regression matrix."
-- Context: the source design ("Khufu local validation design, revision 2,
-  15 October 2026, supplied by the estate owner") placed Khufu in
-  `leynos/nile-valley`; this repository exists; ToR §9 open question; design
-  §4.3 pinning rules; Nile Valley is an OpenTofu, Flux, and Python platform
-  repository whose release cadence is tied to cloud infrastructure.
+  manifest and regression matrix." (D10 grammar).
+- Context and problem statement: the source design placed Khufu in
+  `leynos/nile-valley`; this repository exists; the terms of reference ask
+  which repository hosts the implementation; design §4.3 requires exact pins
+  without network discovery; Nile Valley is an OpenTofu, Flux, and Python
+  platform repository whose cadence follows cloud infrastructure; the PyPI name
+  `khufu` belongs to an unrelated project.
 - Decision drivers: one installable package with its own release; anti-drift
-  checks in one place; exact pins without network discovery; no
-  dependency-confusion exposure.
-- Options: A, Khufu in `leynos/khufu` (chosen); B, Khufu inside
-  `leynos/nile-valley` (source design); C, Khufu as a Python package in Nile
-  Valley's monorepo published separately. Compare on release coupling, CI
-  scope, review ownership, and pin clarity in a captioned table.
-- Decision outcome: code home, estate-manifest home, regression-matrix home,
-  release channel per D3. `### Consequences`: consumers pin
-  `version + URL + SHA-256`; `validation-estate.toml` records the approved
-  release the same way; immutable releases must be enabled and `release.yml`
-  must stop using post-publication `--clobber` uploads before the first tag;
-  candidates are tested by explicit local selection (design §4.3); Nile Valley
-  CI fetches the pinned asset, never "latest".
-- Known risks and limitations: GitHub availability for first install (cache
-  thereafter); a deleted immutable release cannot reuse its tag; the
-  regression-matrix runner question (design §18 open item) stays open and
-  belongs to roadmap 5.1.3.
+  enforcement in one place; exact, hash-verified pins; no dependency-confusion
+  exposure.
+- Options considered: A, Khufu in `leynos/khufu` (chosen); B, Khufu inside
+  `leynos/nile-valley` (the source design); C, a separately published package
+  inside Nile Valley. Compare release coupling, CI scope, review ownership, and
+  pin clarity in a captioned table.
+- Decision outcome: code home `leynos/khufu`; estate manifest
+  `validation-estate.toml` and the regression matrix in `leynos/nile-valley`;
+  Nile Valley responsibilities (estate manifest, regression matrix, GitOps
+  rendering); the release channel and pin shape per D3, including the unsafe
+  and safe install commands. State in plain text, without a link, that
+  ownership of the shared fixture specifications is decided separately (design
+  §18, ADR 0004). `### Consequences`: the estate-manifest fields (version, tag,
+  commit SHA, wheel URL and SHA-256, dependency-lock URL and SHA-256, platform
+  lock digest, fixture-specification digest); the workspace pin shape for
+  roadmap 1.5.2 (reject a `khufu` pin without URL and hash); the release
+  preconditions from D3; candidates per D3; Nile Valley CI fetches the pinned
+  assets, never "latest".
+- Known risks and limitations: integrity is guaranteed, availability is not (a
+  release can be deleted; CI runners start with empty caches; egress to
+  `release-assets.githubusercontent.com` is required); a deleted release's tag
+  cannot be reused; the regression-matrix runner choice (design §18 open item)
+  remains with roadmap 5.1.3.
 
-Also in this milestone: update design §1.1 (no longer provisional; link the
-ADR; keep only statements consistent with D7 for the fixture specifications,
-deferring their wording to `EP-M5`), design §4.3 (link the ADR and name the pin
-shape), design §18 first bullet (link, "Accepted"), the ToR §9
-implementation-home row (resolution: link to the accepted ADR), add a "Decision
-records" group to `docs/contents.md` with this ADR, and add a sub-bullet to
-roadmap 5.4.1 requiring immutable publication per ADR 0001. Remove the
-strict-xfail marker from the 0001 case. Gate and commit ("Accept ADR 0001:
-implementation home").
+Also: rewrite only the provisional sentence of design §1.1 (lines 54-56) to
+cite the accepted ADR, leaving the fixture clause (lines 57-59) unchanged until
+`EP-M5`; link the ADR from design §4.3 and state the pin shape; mark design
+§18's first bullet accepted with a link; set the terms-of-reference §9
+implementation-home row's path to the ADR link; create the "Decision records"
+group in `docs/contents.md` with this ADR; add a sub-bullet to roadmap 2.6.4
+("Switch Episodic's local validation entry point to Khufu behind a thin
+delegate") requiring that the pinned Khufu release be published per ADR 0001's
+preconditions. Remove the two 0001 xfail markers. Gate and commit ("Accept ADR
+0001: implementation home").
 
 ### `EP-M3` ADR 0002: fixed kind rootless substrate
 
 Assigned: `REQ-SUBSTRATE`, `INV-NO-PLUGIN`, D4.
 
-Create `docs/adrs/adr-0002-fixed-kind-rootless-substrate.md` titled
-`...0002: Fixed kind rootless substrate`. Content: status summary; context
-(four drifting implementations across k3d, kind, Docker, and Podman; design
-§1-2; Episodic's demonstrated path); drivers (drift removal, qualification
-surface, rootless safety); options (fixed stack, chosen; provider matrix behind
-a plug-in interface; kind fixed but engine selectable; rootful fallback when
-rootless fails) in a captioned table; decision outcome naming every forbidden
-surface (`--provider`, `--engine`, k3d, Docker, rootful fallback,
-alternate-cluster plug-in interface) and stating that
-`KIND_EXPERIMENTAL_PROVIDER=podman` is internal configuration of the single
-kind adapter; test doubles substitute ports in tests and are never selectable
-by users, configuration, environment variables, or entry points;
-`### Consequences` naming the fitness tests in
-`tests/test_substrate_fitness.py`, `doctor` reporting rather than repairing
-host prerequisites (cite kind's rootless requirements), and the extension rule
-(a new substrate requires a superseding ADR, not a plug-in). Known risks: host
-variance; GitHub-hosted runners may lack delegation (regression-matrix runner
-question).
+Create `docs/adrs/adr-0002-fixed-kind-rootless-substrate.md`, titled
+`...0002: Fixed kind rootless substrate`. Context: four drifting
+implementations across k3d, kind, Docker, and Podman; design §1-2; Episodic's
+demonstrated path. Drivers: drift removal, qualification surface, rootless
+safety. Options: fixed stack (chosen); provider matrix behind a plug-in
+interface; kind fixed with a selectable engine; rootful fallback when rootless
+fails; captioned table. Decision outcome: the stack; every forbidden surface by
+name (`--provider`, `--engine`, k3d, Docker, rootful fallback,
+alternate-cluster plug-in interface); `KIND_EXPERIMENTAL_PROVIDER=podman` as
+internal configuration of the single kind adapter; test doubles substitute
+ports in tests and are never selectable by users, configuration, environment
+variables, or entry points. `### Consequences`: the fitness rules in
+`tests/test_substrate_fitness.py` and their planned extension in roadmap 1.4;
+`doctor` reports host prerequisites (citing kind's rootless documentation in a
+footnote) and never repairs them; a new substrate requires a superseding ADR,
+not a plug-in. Known risks: host variance; GitHub-hosted runners may lack
+delegation.
 
-Update design §2 (link), §5.1/§5.2 (link the "module, not a registry"
-statement), §17 table 7 caption context (link), §18 second bullet. Remove the
-0002 strict-xfail marker. Gate and commit.
+Update design §2, §5.2 ("module, not a registry"), §17 table 7 introduction,
+and §18 second bullet with links; add the `docs/contents.md` entry. Remove the
+two 0002 xfail markers. Gate and commit.
 
 ### `EP-M4` ADR 0003: systemd user-service supervision
 
 Assigned: `REQ-SUPERVISION`, `GAP-FOREGROUND`, `GAP-SESSION-LIMITS`, D5, D6.
 
-Create `docs/adrs/adr-0003-systemd-user-service-supervision.md` titled
-`...0003: Systemd user service supervision`. Content: status summary; context
-(long multi-minute cluster work must survive the invoking terminal and agent
-process; design §11); drivers (detached durability, crash recovery without a
-second worker, observer independence, honest guarantees); options (transient
-user services, chosen; a Khufu-owned daemon; `nohup` or double-fork background
-processes; foreground-only execution; `systemd-run --scope`, rejected because a
-scope dies with its caller) in a captioned table. Decision outcome:
+Create `docs/adrs/adr-0003-systemd-user-service-supervision.md`, titled
+`...0003: Systemd user service supervision`. Context: multi-minute cluster work
+must outlive the invoking terminal or agent; the SQLite ledger under
+`$XDG_STATE_HOME/khufu` is the durable record (premise; design §11.1, roadmap
+2.2.1). Drivers: detached durability, crash recovery without a second worker,
+observer independence, honest guarantees. Options (captioned table): transient
+user services (chosen); a Khufu-owned daemon; `nohup` or double-fork;
+foreground-only execution; `systemd-run --scope` (rejected for the reason in
+D5). Decision outcome: the invariants in D5, the observer rule (killing a
+waiting CLI never stops the worker; cancellation is the explicit `jobs cancel`
+operation), the deferral and refusal sequencing in D6, and the `doctor`
+session-survival findings in D6. `### Consequences`: roadmap 2.1.1 gains the
+session findings; roadmap 2.1.2 checks whether the worker unit needs
+`Delegate=yes`; roadmap 2.2.4 implements the invariants; recovery reconciles
+environments as well as jobs. Known risks: hosts without a user manager cannot
+run jobs until roadmap 5.1.2; reboot always interrupts; the compiled
+`KillUserProcesses=` default differs between distributions.
 
-- Each long operation runs in a named transient user service started with
-  `systemd-run --user` and a deterministic unit name derived from the job
-  identifier; the SQLite ledger under `$XDG_STATE_HOME/khufu` is the source of
-  truth; the job is committed before the unit starts; the unit identity is
-  recorded and verified; recovery reconciles by unit name and never spawns a
-  second worker.
-- A waiting CLI (`--wait`, a TTY, or an agent) is an observer: killing it
-  never stops the worker; cancellation is the explicit `jobs cancel` operation.
-- The foreground mode is deferred to roadmap 5.1.2 with the contract in D5;
-  until then submission refuses with exit code `3` when no user manager is
-  usable.
-- Session-survival limits that `doctor` must report as findings (never
-  repair): whether a user manager is reachable for the invoking user (no user
-  bus means detached jobs are unavailable); whether lingering is enabled
-  (without it, `user@.service` stops about `UserStopDelaySec=` after the last
-  session ends, interrupting jobs at logout); that no transient unit survives
-  reboot even with lingering, so recovery marks those jobs interrupted; and that
-  `KillUserProcesses=` does not govern user-manager services (stated so that
-  remediation text does not misdirect users).
-
-`### Consequences`: roadmap 2.1.1 gains the session-guarantee findings; roadmap
-2.2.4 implements this ADR; the regression matrix (5.1.3) needs runners with a
-lingering user manager until 5.1.2 ships. Known risks: hosts without user
-systemd (containers, some CI) cannot run jobs until 5.1.2; reboot always
-interrupts.
-
-Edit in the same commit: design §11.3 (replace the present-tense foreground
-paragraph with the deferral and the session-limit list; link the ADR), design
-§17 table 8 systemd row (mention lingering), design §18 third bullet; users'
-guide prerequisites (lines 36-45) and "Execution modes" (lines 314-323) to say
-detached execution needs a usable user manager, lingering is needed for jobs to
-outlive logout, reboot interrupts jobs, and foreground mode is planned but not
-yet available; ToR §4.2 (CI needs a foreground mode "from roadmap 5.1.2; until
-then, a runner with a lingering user manager") and the ToR §9 foreground row
-(resolution path: ADR 0003 and roadmap 5.1.2); roadmap 2.1.1 checklist (add
-"session guarantees: user manager reachability and lingering"). Remove the 0003
-strict-xfail marker. Gate and commit.
+In the same commit: replace the present-tense foreground paragraph in design
+§11.3 with the deferral and session limits and link the ADR; mention lingering
+and environment clusters in design §17 table 8's systemd row; mark design §18's
+third bullet accepted; update the users' guide prerequisites (lines 36-45) and
+"Execution modes" (lines 314-323) to say detached execution needs a usable user
+manager, lingering is needed for jobs and environments to outlive logout,
+reboot interrupts jobs and stops environments, and the foreground mode is
+planned but not yet available; set the terms-of-reference §9 foreground row's
+path to "ADR 0003; roadmap 5.1.2"; add "session guarantees (user manager
+reachability, lingering, `UserStopDelaySec=`, delegated controllers, Podman
+cgroup manager)" to roadmap 2.1.1's checklist; add the `docs/contents.md`
+entry. Remove the two 0003 xfail markers. Gate and commit.
 
 ### `EP-M5` ADR 0004: shared fixture specifications
 
-Assigned: `REQ-FIXTURES`, `GAP-FIXTURE-ALIGNMENT`, D7.
+Assigned: `REQ-FIXTURES`, `GAP-FIXTURE-ALIGNMENT`, D7. Starts only after the
+user's answer on D7 is recorded in `Decision log` and `Progress`.
 
-Create `docs/adrs/adr-0004-shared-fixture-specifications.md` titled
-`...0004: Shared fixture specifications`. Content: status summary; context
-(Nile Valley's OpenTofu modules render CNPG `Cluster` and Hyperspike `Valkey`
-resources for Flux; Khufu's renderers render the same resources for direct Helm
-execution; the Valkey resource-identity hazard in design §3.2 shows what
-divergence costs; design §7.1 makes the lock own CRD schemas and operator
-versions); drivers (one specification source, one version axis, language
-neutrality for Python and HCL, no network discovery); options (Khufu owns,
-chosen per D7; Nile Valley owns and Khufu vendors; a third repository) in a
-captioned table comparing version axes, coupling direction, and the consumption
-mechanism on each side. Decision outcome per D7, including: location
-(`khufu/platform/fixtures/` holding `*.schema.json` and versioned specification
-documents; exact layout settled by roadmap 3.1.1), Khufu-side consumption
-(renderers load the packaged files; the lock records their digest), Nile
-Valley-side consumption (download the release asset named in
-`validation-estate.toml`, verify SHA-256, decode with `jsondecode`), and the
-alignment rule. `### Consequences`: design §1.1 and §3.1 wording changes; the
-deferred GitOps suite (design §12.1, roadmap 7.1.1) renders from these
-specifications; Nile Valley adoption is a Nile Valley change outside this
-repository and is listed as a known limitation until it lands.
+Create `docs/adrs/adr-0004-shared-fixture-specifications.md`, titled
+`...0004: Shared fixture specifications`. Context: Nile Valley's OpenTofu
+modules render CNPG `Cluster` and Hyperspike `Valkey` resources for Flux with
+their own operator pins; Khufu's renderers will render the same resources for
+direct Helm execution; design §3.2's Valkey resource-identity hazard shows the
+cost of divergence; design §7.1 makes the lock own the custom resource
+definition (CRD) schemas and operator versions Khufu qualifies. Drivers: one
+specification source, one version axis, language neutrality (Python and
+OpenTofu), no dependency from production onto a local-validation tool unless
+the user chooses it, no network discovery. Options: A, B, and C from D7 in a
+captioned table comparing version axes, dependency direction, and each side's
+consumption mechanism. Decision outcome: the chosen owner; the artefact
+identity (digest-addressed JSON with a reproducible digest); Khufu-side
+consumption (vendored or packaged files, digest recorded in
+`platform.lock.toml`); Nile Valley-side consumption (artefact in its own tree,
+validated in its CI); the alignment rule. Layout is left to roadmap 3.1.1 and
+OpenTofu decoding to Nile Valley. `### Consequences`: design and context
+wording; the GitOps suite (design §12.1, roadmap 7.1.1) renders from these
+specifications; Nile Valley adoption is a Nile Valley change.
 
-Update design §1.1, §3.1 Nile Valley row, §7.1 (the lock records the
-specification digest), §12.1 GitOps paragraph (link), and §18 fourth bullet.
-Check `docs/context.md` rows for "Nile Valley" and "Platform lock" and adjust
-only if they now contradict the ADR. Remove the 0004 and scenario 1 and
-link-test strict-xfail markers. Gate and commit.
+Update design §1.1's fixture clause and §3.1's Nile Valley row to match the
+answer; add the specification digest to design §7.1's lock contents; link the
+ADR from design §12.1 and mark §18's fourth bullet accepted; update the
+`docs/context.md` "Nile Valley" and "Platform lock" rows so they agree with the
+ADR; add roadmap follow-ups: a sub-bullet under 3.1.1 (the platform lock task)
+recording the specification digest, and a sub-bullet under 5.1.1 ("Define
+`validation-estate.toml` in Nile Valley") recording Nile Valley's adoption of
+the specification artefact; add the `docs/contents.md` entry. Add the owner
+token from the D7 answer to the 0004 row of the identifier table. Remove the
+two 0004 xfail markers and the foundation scenario's marker. Gate and commit.
 
 ### `EP-M6` documentation closure
 
 Assigned: `REQ-TRACE`, `GAP-ADR-INDEX`.
 
-1. `docs/contents.md`: complete the "Decision records" group (directory entry
-   plus four ADR entries, one line each).
-2. `docs/developers-guide.md`: add a short "Decision records" subsection:
-   where ADRs live, the filename and status rules, that
+1. `docs/contents.md`: add a `docs/adrs/` directory entry above the four ADR
+   entries and an entry for `docs/execplans/`.
+2. `docs/developers-guide.md`: replace lines 95-97 ("ADR candidates …
+   awaiting ratification") with a link to the "Decision records" group, and add
+   a short "Decision records" subsection: where ADRs live; the filename,
+   heading, status, and date rules (D10); that
    `tests/test_decision_records_repository.py` and the BDD feature enforce
-   them, that every accepted ADR must be linked from design §18 and
-   `docs/contents.md`, and how to supersede or amend an ADR. Add a sentence on
-   the substrate fitness tests and that test doubles are never production
-   extension points.
-3. `docs/khufu-design.md` front matter: bump "Last substantive revision" to
-   the completion date and rename §18 to "Decision records and open questions"
-   only if all four candidates are now accepted; keep the two remaining open
-   items.
-4. Stale-claim sweep, excluding `docs/execplans/`:
+   them; that every accepted ADR must be linked from design §18 and
+   `docs/contents.md`; how to amend or supersede an ADR; and the substrate
+   fitness rules, including that test doubles are never production extension
+   points.
+3. `docs/khufu-design.md` front matter: set "Last substantive revision" to the
+   completion date; keep "Status: Draft v0.1" unless the user directs
+   otherwise. Keep the §18 heading text so its anchor stays valid, adding the
+   ADR links beneath it; if it must change, update the developers' guide link
+   in the same commit.
+4. Stale-claim sweep, excluding ExecPlans:
 
    ```bash
-   rg -n -i "provisional|pending acceptance|ADR candidate|foreground (CI )?mode|Hosts without one use" docs --glob '!docs/execplans/**'
+   rg -n -i --glob '!docs/execplans/**' docs -e provisional -e "pending acceptance" \
+     -e "awaiting ratification" -e "ADR candidate" -e "foreground (execution|mode)" \
+     -e "GitOps fixtures" -e "Hosts without one use"
    ```
 
-   Each hit must be either consistent with the ADRs or edited.
-5. Roadmap: mark 1.1.1-1.1.4 as done (`- [x]`).
-6. Run the full gate sequence, then update this plan's `Progress`,
-   `Outcomes & retrospective`, and status to `COMPLETE`.
+   Every hit must agree with the ADRs or be edited. Expected surviving hits:
+   the terms-of-reference needs statements kept by D9, and the design's
+   description of the deferred mode.
+5. Roadmap: mark 1.1.1-1.1.4 done (`- [x]`).
+6. Run the full gate sequence. Update `Progress`, `Outcomes & retrospective`,
+   and set the status to `COMPLETE`.
 
 ## Milestones and plateaus
 
-- `EP-M1`: the suite exists; rule tests, property tests, fitness tests, and
-  BDD negative scenarios pass; repository acceptance cases are strict-xfail.
-  Conformance: no `khufu/` change; only the two authorized dependencies.
-  Recovery: revert the two commits. Remaining: all ADRs. Compatibility: none.
-- `EP-M2`: ADR 0001 accepted, linked, and its strict-xfail removed.
-  Conformance: ToR implementation-home question closed; no Nile Valley or
-  release-workflow edits. Recovery: revert the ADR commit. Remaining: ADRs
-  0002-0004. Compatibility: none.
-- `EP-M3`: ADR 0002 accepted and enforced by fitness tests. Recovery: revert.
-  Compatibility: none.
-- `EP-M4`: ADR 0003 accepted; no live document claims a foreground mode is
+- `EP-M1`: the suite exists and is green except for nine strict xfails.
+  Requirements: `REQ-FORMAT`, `INV-NO-PLUGIN`. Conformance: no `khufu/` change;
+  only authorized configuration. Recovery: revert the two commits. Remaining:
+  all ADRs. Compatibility: none.
+- `EP-M2`: ADR 0001 accepted, linked, and its xfails removed. Conformance: the
+  terms-of-reference implementation-home question is closed; no release
+  workflow or Nile Valley edits. Recovery: revert the ADR commit. Remaining:
+  ADRs 0002-0004. Compatibility: none.
+- `EP-M3`: ADR 0002 accepted and enforced. Recovery: revert. Compatibility:
+  none.
+- `EP-M4`: ADR 0003 accepted; no live document claims the foreground mode is
   available. Recovery: revert the single commit (ADR and reconciling edits land
-  together so the documents never disagree). Compatibility: none.
-- `EP-M5`: ADR 0004 accepted; BDD scenario 1 passes. Recovery: revert.
-  Compatibility: none.
+  together). Compatibility: none.
+- `EP-M5`: ADR 0004 accepted per the user's D7 answer; the foundation scenario
+  passes. Recovery: revert. Compatibility: none.
 - `EP-M6`: indexes, developers' guide, and roadmap current; all gates green.
   Compatibility: none.
 
-At every boundary check: assigned requirements satisfied; design still followed
-(or the ADR records the change); no upstream assumption falsified; no
-unapproved interface, dependency, trust boundary, or persisted-format change;
-trace links in `Conformance basis` current.
+At each boundary, check: the assigned requirements are satisfied; the design is
+still followed or the ADR records the change; no upstream assumption was
+falsified; no unapproved interface, dependency, trust boundary, or persisted
+format changed; the trace links in `Conformance basis` are current.
 
 ## Concrete steps
 
 Working directory: the repository root. Use `bash` with `set -o pipefail` so
-`tee` cannot mask a failing gate. Log names follow
+`tee` cannot hide a failing gate. Logs follow
 `/tmp/$ACTION-khufu-1-1-ratify-early-decisions.out`.
 
 ```bash
@@ -990,80 +1143,105 @@ make markdownlint 2>&1 | tee /tmp/markdownlint-khufu-1-1-ratify-early-decisions.
 make nixie 2>&1 | tee /tmp/nixie-khufu-1-1-ratify-early-decisions.out
 ```
 
-Run the gates sequentially, never in parallel. Delegating the run to the
-`scrutineer` agent is preferred.
+Run the gates sequentially; delegating the run to the `scrutineer` agent is
+preferred. If `make markdownlint` regenerates `typos.toml` again, commit that
+change on `regenerate-typos-config` (or a new base branch) rather than here.
 
 Focused commands:
 
 ```plaintext
-EP-M1 red:   uv run pytest tests/test_decision_record_rules.py -> ModuleNotFoundError (rules module absent)
-EP-M1 green: uv run pytest tests/test_decision_record_rules.py tests/test_substrate_fitness.py \
-               --hypothesis-show-statistics -> all pass; both duplicate classes appear
-EP-M1 repo:  uv run pytest tests/test_decision_records_repository.py \
-               tests/test_decision_records_bdd.py -> 4 negative scenarios pass, 6 xfailed
-EP-M2..M5:   same command -> one fewer xfailed per milestone; EP-M5 -> 0 xfailed
+EP-M1 red:   uv run pytest tests/test_decision_record_rules.py
+             -> ModuleNotFoundError: No module named 'tests.decision_records'
+EP-M1 green: uv run pytest tests/test_decision_record_rules.py tests/test_substrate_fitness.py
+             -> all pass
+EP-M1 repo:  uv run pytest tests/test_decision_records_repository.py tests/test_decision_records_bdd.py
+             -> 1 passed + 3 scenarios passed, 9 xfailed
+EP-M2..M4:   same command -> 2 fewer xfailed per milestone (7, 5, 3)
+EP-M5:       same command -> 0 xfailed
 ```
 
 ## Validation and acceptance
 
 Acceptance is met when:
 
-- `ls docs/adrs/` lists exactly the four roadmap filenames.
-- `make test` passes with no `xfail` remaining in the decision-record suite,
-  and the run shows the BDD scenario "The four foundational ADRs are accepted
-  and linked" passing.
+- `ls docs/adrs/` lists exactly the four roadmap file names.
+- `make test` passes with no xfail left in the decision-record suite, and the
+  scenario "The four foundational ADRs are accepted and linked" passes.
 - Each negative control in `Verification plan` was observed failing for the
-  intended reason during `EP-M1` (record the transcripts in
-  `Artefacts and notes`), then reverted.
-- `make check-fmt`, `make typecheck`, `make lint`, `make markdownlint`, and
-  `make nixie` pass.
-- The stale-claim sweep in `EP-M6` returns only consistent hits.
+  intended reason in `EP-M1`, with transcripts in `Artefacts and notes`, and
+  was reverted.
+- `make check-fmt`, `make typecheck`, `make lint`, `make markdownlint`,
+  `make nixie`, and `make audit` pass.
+- The `EP-M6` sweep returns only the expected hits.
 - Roadmap 1.1.1-1.1.4 are checked.
-
-Quality criteria: tests and gates above; no performance or security scans beyond
-`make audit`, which should be run once after `uv lock` in `EP-M1`.
 
 ## Idempotence and recovery
 
-All steps are file edits and test runs; rerunning them is safe. `uv lock` is
-deterministic for a fixed index state. Each milestone is a separate commit, so
-`git revert <sha>` restores the previous plateau. Seeded faults for negative
-controls are made in the working tree only, observed, and reverted with
-`git checkout -- <file>` before committing; delete any `.hypothesis/` directory
-changes produced by the seeded runs (`.hypothesis/` should be git-ignored; add
-it to `.gitignore` in `EP-M1` if it is not).
+All steps are file edits and test runs, so rerunning them is safe. `uv lock` is
+deterministic for a fixed index state. Each milestone is one or more separate
+commits, so `git revert <sha>` restores the previous plateau. Seeded faults are
+made only in the working tree, observed, and reverted with
+`git checkout -- <file>` before committing. `.hypothesis/` is already
+git-ignored.
 
 ## Artefacts and notes
 
-Planning-time observations (revision `4ab9802`, 2026-11-20):
+Planning-time observations (2026-11-20):
 
 ```plaintext
 $ gh api repos/leynos/khufu/immutable-releases
 {"enabled":false,"enforced_by_owner":false}
-$ curl -s https://pypi.org/pypi/khufu/json | jq -r '.info.summary'
+$ gh api repos/leynos/khufu/rulesets
+[]
+$ curl -s https://pypi.org/pypi/khufu/json   (info.summary)
 Twitter Bootstrap elements via Python
-$ man logind.conf | grep -A3 UserStopDelaySec   (systemd 257, Rocky Linux 10)
-Specifies how long to keep the user record and per-user service user@.service
-around for a user after they logged out fully. ... Defaults to 10s.
+$ man logind.conf   (UserStopDelaySec=, systemd 257, Rocky Linux 10)
+... Defaults to 10s.
 ```
 
-Implementation evidence (red, green, negative controls) is appended here during
-execution.
+Implementation evidence (red, green, and negative controls) is appended here
+during execution.
 
 ## Interfaces and dependencies
 
-- New dev dependencies: `pytest-bdd` (9.0.x) and `hypothesis` (6.170.x),
-  exact pins, `dev` group only. Both declare CPython 3.14 support.
-- New test-support modules: `tests/decision_records.py` (pure rules; the
-  only owner of ADR grammar and validation; future ADR checks extend it rather
-  than re-parsing Markdown elsewhere) and `tests/decision_record_loader.py`
-  (filesystem adapter). Both are test infrastructure, not part of the `khufu`
-  package, and are documented in `docs/developers-guide.md`.
+- New dev dependencies: `pytest-bdd` 9.0.x and `hypothesis` 6.170.x, exact
+  pins, `dev` group only. Both declare CPython 3.14 support. `pytest-bdd` brings
+  `mako`, `parse`, `parse-type`, and `gherkin-official`, which `make audit`
+  checks.
+- New test modules: `tests/decision_records.py` (pure rules; the single owner
+  of ADR grammar, so future ADR checks extend it rather than re-parsing
+  Markdown elsewhere); `tests/test_decision_record_rules.py`;
+  `tests/test_decision_records_repository.py`;
+  `tests/test_decision_records_bdd.py` with
+  `tests/features/decision_records.feature`; `tests/test_substrate_fitness.py`.
+  An optional `tests/conftest.py` holds only the shared `record_text(...)`
+  builder if two modules need it. These are test infrastructure, not part of the
+  `khufu` package; `docs/developers-guide.md` documents them.
 - No `khufu/` interface, Makefile target, or CI workflow changes.
-- Reuse: no existing Markdown or ADR helper exists in the repository (checked
-  with `rg -n "def .*markdown|adr" tests scripts khufu`), so no reuse is
-  possible; the Makefile already runs everything under `tests/`.
+- Reuse: the repository has no Markdown or ADR helper
+  (`rg -n "markdown|adr" tests scripts khufu` finds none), so nothing can be
+  reused.
 
 ## Revision note
 
-- 2026-11-20: initial draft from reconnaissance; awaiting expert review.
+- 2026-11-20: initial draft from reconnaissance.
+- 2026-11-20: expert review applied (release engineering, systemd and rootless
+  containers, Python test architecture, documentation governance). Changes: D7
+  reversed to recommend Nile Valley ownership and turned into a user decision
+  gating `EP-M5` only; D3 extended to a hashed dependency lock, tag protection,
+  an atomic publish sequence, candidate identity, and manifest fields, with the
+  PyPI direct-URL constraint added; D5 rewritten around attempt-qualified unit
+  names, `InvocationID`, a `Type=exec` start, `ExecStopPost=` result capture, a
+  corrected `--scope` rejection, and cgroup containment; D6 gained
+  environment-cluster loss, Podman's cgroup manager, bus reachability,
+  `UserStopDelaySec=`, and refusal sequencing, and dropped SQLite as a separate
+  decision; D4 now catches Cyclopts-derived options and aliased plug-in
+  imports; D9 and D10 added; the test suite was halved and its xfail schedule
+  fixed (per-ADR link tests, `@scenario` strict xfail, Vulture decorators,
+  `pythonpath`); contradicting passages in `docs/context.md` and
+  `docs/developers-guide.md` added; the release precondition moved from roadmap
+  5.4.1 to 2.6.4. Remaining work and milestone order are unchanged except that
+  `EP-M5` now waits for the user's D7 answer.
+
+[^1]: <https://kind.sigs.k8s.io/docs/user/rootless/>
+[^2]: <https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases>
