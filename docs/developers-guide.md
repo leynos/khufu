@@ -188,6 +188,9 @@ The local cache that keeps the gate usable when the authority is temporarily
 unreachable is ignored by Git. Add only narrow project-specific terms and
 exclusions to `typos.local.toml`; never edit generated `typos.toml` by hand.
 
+The builder requires Python 3.14 or newer, so the Makefile passes
+`--python 3.14` to `uv tool run`; keep it when the interpreter matrix changes.
+
 ## CodeScene coverage publication
 
 Main owns CodeScene (CV-005). Nothing a pull request can start talks to
